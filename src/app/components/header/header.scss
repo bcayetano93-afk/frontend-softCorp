@@ -43,6 +43,7 @@
 }
 
 .brand-text small {
+  white-space: nowrap;
   color: var(--muted);
   font-size: 11px;
   letter-spacing: 1px;
@@ -66,20 +67,64 @@
   color: var(--orange);
 }
 
-.header-btn {
-  padding: 10px 18px;
+/* Botones de la derecha */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-actions .btn {
+  padding: 9px 18px;
+  font-size: 14px;
+  white-space: nowrap; /* el texto del botón no se parte en dos líneas */
+}
+
+/* Botón de iniciar sesión: borde azul y fondo blanco */
+.btn-login {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--navy);
+  border-color: var(--navy);
+}
+
+.btn-login:hover {
+  color: var(--white);
+  background: var(--navy);
+}
+
+.login-icon {
   font-size: 14px;
 }
 
 /* En pantallas medianas se oculta el menú; en pequeñas también el botón */
-@media (max-width: 960px) {
+@media (max-width: 1080px) {
   .nav {
     display: none;
   }
 }
 
-@media (max-width: 480px) {
+/* En celular solo se muestra "Iniciar sesión" */
+@media (max-width: 600px) {
   .header-btn {
     display: none;
+  }
+
+  .header-content {
+    gap: 12px;
+  }
+
+  .brand-text strong {
+    font-size: 15px;
+  }
+
+  .brand-text small,
+  .login-icon {
+    display: none;
+  }
+
+  .header-actions .btn {
+    padding: 8px 14px;
   }
 }
