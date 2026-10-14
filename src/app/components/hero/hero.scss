@@ -1,0 +1,210 @@
+.hero {
+  padding: 80px 0 90px;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 55%, #1d4e7a 100%);
+}
+
+/* Dos columnas: texto a la izquierda y tarjeta a la derecha */
+.hero-content {
+  display: flex;
+  align-items: center;
+  gap: 56px;
+}
+
+.hero-text {
+  flex: 1;
+}
+
+.hero-label {
+  display: inline-block;
+  padding: 6px 14px;
+  color: #9fd3ff;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hero-title {
+  margin: 20px 0;
+  font-size: 46px;
+  line-height: 1.15;
+}
+
+.hero-title span {
+  display: block;
+  color: var(--orange);
+}
+
+.hero-description {
+  max-width: 520px;
+  color: #c8d6e5;
+  font-size: 17px;
+}
+
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 40px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.stat strong {
+  display: block;
+  font-size: 30px;
+}
+
+.stat span {
+  color: #9fb3c8;
+  font-size: 14px;
+}
+
+/* Tarjeta blanca */
+.hero-card {
+  width: 420px;
+  padding: 24px;
+  color: var(--text);
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.25);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.card-header h3 {
+  color: var(--navy);
+  font-size: 17px;
+}
+
+.card-tag {
+  padding: 3px 10px;
+  color: var(--teal);
+  background: #e3f6f1;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tech {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  background: #e6edf6;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tech-info {
+  flex: 1;
+}
+
+.tech-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.tech-info small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.available {
+  color: var(--teal);
+  background: #e3f6f1;
+}
+
+.busy {
+  color: var(--orange-dark);
+  background: #fdeae2;
+}
+
+/* Barra de carga de trabajo */
+.progress {
+  height: 6px;
+  margin-top: 6px;
+  background: var(--border);
+  border-radius: 6px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--teal);
+  border-radius: 6px;
+}
+
+.progress-bar.full {
+  background: var(--orange);
+}
+
+.card-note {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+/* En tablet y celular la tarjeta baja debajo del texto */
+@media (max-width: 960px) {
+  .hero-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-card {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .hero-title {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero {
+    padding: 56px 0 64px;
+  }
+
+  .hero-stats {
+    gap: 20px;
+  }
+
+  .stat strong {
+    font-size: 24px;
+  }
+}

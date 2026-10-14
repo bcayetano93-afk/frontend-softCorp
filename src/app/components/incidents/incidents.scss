@@ -1,0 +1,74 @@
+.incidents {
+  background: var(--bg-soft);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(15, 42, 71, 0.06);
+}
+
+table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th {
+  padding: 14px 16px;
+  color: var(--white);
+  background: var(--navy);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: #f9fbfd;
+}
+
+.code {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+/* Evita que el código y el equipo se partan en dos líneas */
+.code,
+td strong {
+  white-space: nowrap;
+}
+
+/* Etiqueta de estado: amarilla para Pendiente, verde para Solucionado */
+.status {
+  padding: 4px 12px;
+  color: #b7791f;
+  background: #fdf3dc;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status.solved {
+  color: var(--teal);
+  background: #e3f6f1;
+}
+
+.note {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}

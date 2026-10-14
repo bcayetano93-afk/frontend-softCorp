@@ -1,0 +1,29 @@
+<section class="section process" id="proceso">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Cómo funciona</span>
+      <h2 class="section-title">El recorrido de una incidencia</h2>
+      <p class="section-text">
+        Desde que el usuario reporta la falla hasta que el técnico entrega el informe.
+      </p>
+    </div>
+
+    <div class="steps">
+      @for (step of steps; track step.title; let i = $index) {
+        <div class="step">
+          <span class="step-number">{{ i + 1 }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.text }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Los dos estados que puede tener una incidencia -->
+    <div class="states">
+      <span>Estados de una incidencia:</span>
+      <span class="state pending">Pendiente</span>
+      <span class="arrow">→</span>
+      <span class="state solved">Solucionado</span>
+    </div>
+  </div>
+</section>

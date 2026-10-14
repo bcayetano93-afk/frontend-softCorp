@@ -1,0 +1,27 @@
+<section class="section" id="roles">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Roles</span>
+      <h2 class="section-title">Cada persona ve lo que necesita</h2>
+      <p class="section-text">
+        Las opciones del sistema cambian según las responsabilidades de cada miembro del área.
+      </p>
+    </div>
+
+    <div class="roles-grid">
+      @for (role of roles; track role.name) {
+        <article class="role-card" [class.featured]="role.featured">
+          <span class="role-icon">{{ role.icon }}</span>
+          <h3>{{ role.name }}</h3>
+          <p>{{ role.description }}</p>
+
+          <ul>
+            @for (task of role.tasks; track task) {
+              <li>{{ task }}</li>
+            }
+          </ul>
+        </article>
+      }
+    </div>
+  </div>
+</section>

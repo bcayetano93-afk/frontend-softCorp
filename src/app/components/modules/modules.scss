@@ -1,0 +1,70 @@
+/* Cuadrícula de 4 columnas */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.module-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+/* Al pasar el mouse la tarjeta sube un poco */
+.module-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--orange);
+  box-shadow: 0 14px 30px rgba(15, 42, 71, 0.1);
+}
+
+.module-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  background: #fff1eb;
+  border-radius: 12px;
+  font-size: 24px;
+}
+
+.module-card h3 {
+  margin-bottom: 8px;
+  color: var(--navy);
+  font-size: 17px;
+}
+
+.module-card p {
+  flex: 1;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.module-role {
+  align-self: flex-start;
+  margin-top: 16px;
+  padding: 4px 12px;
+  color: var(--navy);
+  background: var(--bg-soft);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .modules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .modules-grid {
+    grid-template-columns: 1fr;
+  }
+}

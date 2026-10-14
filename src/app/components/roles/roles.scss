@@ -1,0 +1,78 @@
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.role-card {
+  padding: 32px 28px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+/* La tarjeta destacada (técnicos) usa fondo oscuro */
+.role-card.featured {
+  color: var(--white);
+  background: var(--navy);
+  border-color: var(--navy);
+  box-shadow: 0 20px 40px rgba(15, 42, 71, 0.25);
+}
+
+.role-icon {
+  font-size: 34px;
+}
+
+.role-card h3 {
+  margin: 12px 0 6px;
+  color: var(--navy);
+  font-size: 20px;
+}
+
+.role-card p {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.role-card.featured h3 {
+  color: var(--white);
+}
+
+.role-card.featured p {
+  color: #b9c8d8;
+}
+
+/* Lista con check */
+ul {
+  margin: 20px 0 0;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.featured ul {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+li {
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+li::before {
+  content: '✓';
+  margin-right: 10px;
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.featured li::before {
+  color: var(--orange);
+}
+
+@media (max-width: 860px) {
+  .roles-grid {
+    grid-template-columns: 1fr;
+  }
+}

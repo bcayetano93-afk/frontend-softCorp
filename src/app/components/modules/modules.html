@@ -1,0 +1,22 @@
+<section class="section" id="modulos">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Módulos del sistema</span>
+      <h2 class="section-title">Todo lo que el área necesita en un solo sistema</h2>
+      <p class="section-text">
+        Cada módulo está pensado para una tarea del día a día del área de Soporte y Sistemas.
+      </p>
+    </div>
+
+    <div class="modules-grid">
+      @for (module of modules; track module.title) {
+        <article class="module-card">
+          <span class="module-icon">{{ module.icon }}</span>
+          <h3>{{ module.title }}</h3>
+          <p>{{ module.text }}</p>
+          <span class="module-role">{{ module.role }}</span>
+        </article>
+      }
+    </div>
+  </div>
+</section>

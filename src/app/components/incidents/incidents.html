@@ -1,0 +1,47 @@
+<section class="section incidents" id="incidencias">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Seguimiento</span>
+      <h2 class="section-title">Incidencias recientes</h2>
+      <p class="section-text">Así se verá el registro de incidencias dentro del sistema.</p>
+    </div>
+
+    <!-- El contenedor permite desplazar la tabla en pantallas pequeñas -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Equipo</th>
+            <th>Problema</th>
+            <th>Usuario responsable</th>
+            <th>Registrado por</th>
+            <th>Fecha y hora</th>
+            <th>Técnico</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (incident of incidents; track incident.code) {
+            <tr>
+              <td class="code">{{ incident.code }}</td>
+              <td><strong>{{ incident.device }}</strong></td>
+              <td>{{ incident.problem }}</td>
+              <td>{{ incident.user }}</td>
+              <td>{{ incident.registeredBy }}</td>
+              <td>{{ incident.date }}</td>
+              <td>{{ incident.technician }}</td>
+              <td>
+                <span class="status" [class.solved]="incident.status === 'Solucionado'">
+                  {{ incident.status }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">Datos de ejemplo para mostrar el diseño.</p>
+  </div>
+</section>

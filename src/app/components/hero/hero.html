@@ -1,0 +1,73 @@
+<section class="hero" id="inicio">
+  <div class="container hero-content">
+    <!-- Texto principal -->
+    <div class="hero-text">
+      <span class="hero-label">Plataforma interna de soporte técnico</span>
+
+      <h1 class="hero-title">
+        Gestiona las incidencias de la empresa
+        <span>de forma rápida y ordenada</span>
+      </h1>
+
+      <p class="hero-description">
+        Registra los problemas de los equipos, asigna técnicos según su disponibilidad,
+        controla los repuestos y consulta el historial de cada PC desde un solo lugar.
+      </p>
+
+      <div class="hero-buttons">
+        <a class="btn btn-primary" href="#incidencias">Registrar incidencia</a>
+        <a class="btn btn-outline" href="#modulos">Ver módulos</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <strong>248</strong>
+          <span>Incidencias registradas</span>
+        </div>
+        <div class="stat">
+          <strong>12</strong>
+          <span>Equipos arreglados hoy</span>
+        </div>
+        <div class="stat">
+          <strong>4</strong>
+          <span>Técnicos en el área</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta con la disponibilidad de los técnicos -->
+    <div class="hero-card">
+      <div class="card-header">
+        <h3>Disponibilidad de técnicos</h3>
+        <span class="card-tag">Hoy</span>
+      </div>
+
+      @for (tech of technicians; track tech.name) {
+        <div class="tech">
+          <span class="avatar">{{ tech.initials }}</span>
+
+          <div class="tech-info">
+            <div class="tech-top">
+              <strong>{{ tech.name }}</strong>
+              @if (tech.tasks < tech.limit) {
+                <span class="badge available">Disponible</span>
+              } @else {
+                <span class="badge busy">Sin cupo</span>
+              }
+            </div>
+            <small>{{ tech.specialty }} · {{ tech.tasks }} de {{ tech.limit }} tareas</small>
+            <div class="progress">
+              <div
+                class="progress-bar"
+                [class.full]="tech.tasks >= tech.limit"
+                [style.width.%]="(tech.tasks / tech.limit) * 100"
+              ></div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <p class="card-note">Datos de ejemplo</p>
+    </div>
+  </div>
+</section>
