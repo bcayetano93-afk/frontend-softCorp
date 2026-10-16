@@ -1,0 +1,405 @@
+==========================================================================
+ EXPLICACIÓN DEL FRONTEND - SISTEMA DE INCIDENCIAS SOFT CORPORATION
+ Carpeta: /home/brando/frontend/src/app   (Angular 22)
+==========================================================================
+
+ CONTENIDO
+   1. Visión general
+   2. Archivos raíz de app/
+   3. environments/
+   4. model/
+   5. services/
+   6. interceptors/
+   7. guards/
+   8. components/
+   9. Flujos completos
+  10. Pruebas (*.spec.ts)
+
+
+==========================================================================
+ 1. VISIÓN GENERAL
+==========================================================================
+
+ El frontend es lo que ve el usuario. No toca la base de datos: todo lo
+ pide al backend (Spring Boot, http://localhost:8080/api) por HTTP.
+
+ Estructura de src/app:
+
+   app.ts / app.html / app.scss   -> componente raíz
+   app.config.ts                  -> configuración inicial
+   app.routes.ts                  -> mapa de URLs
+   environments/                  -> dirección del backend
+   model/                         -> forma de los datos (tipos)
+   services/                      -> lógica compartida
+   interceptors/                  -> actúan en cada petición HTTP
+   guards/                        -> protegen las rutas
+   components/                    -> pantallas
+
+ Cómo se relacionan:
+
+   app.config.ts  -> activa rutas + HttpClient + interceptores
+   app.routes.ts  -> URL -> componente (protegido por guards)
+   components/    -> pantallas, que usan...
+   services/      -> ...la lógica, que usa...
+   model/         -> ...los tipos de datos
+   interceptors/  -> actúan solos en cada petición
+   environments/  -> dónde está el backend
+
+ Conceptos de Angular usados:
+   - Componente: parte visual con .html (vista), .scss (estilos) y .ts (lógica).
+   - Service: clase con @Injectable({ providedIn: 'root' }). Hay UNA sola
+     instancia en toda la app y se obtiene con inject(NombreService).
+   - Signal: valor "reactivo". Cuando cambia, Angular redibuja la pantalla.
+     La app es "zoneless" (sin zone.js), por eso los datos que llegan del
+     backend se guardan en signals: signal(), .set(), .update(), computed().
+   - Observable: lo que devuelve HttpClient. La petición no se envía hasta
+     que alguien hace .subscribe({ next, error }).
+   - [(ngModel)]: conecta un campo del formulario con una variable del .ts.
+   - @if / @for: mostrar algo según una condición / repetir por cada elemento.
+   - routerLink: enlace entre páginas sin recargar el sitio.
+
+
+==========================================================================
+ 2. ARCHIVOS RAÍZ DE app/
+==========================================================================
+
+ app.config.ts
+   Configuración que se carga al arrancar:
+   - provideRouter(routes): activa las rutas de app.routes.ts
+   - provideHttpClient(withInterceptors([loadingInterceptor, authInterceptor])):
+     permite hacer peticiones HTTP y hace que TODAS pasen por los dos
+     interceptores.
+
+ app.routes.ts
+   Mapa de URLs -> componentes:
+     ''                       -> Home (homepage)
+     'iniciar-sesion'         -> InicioSesion
+     'principal'              -> Principal   [authGuard]
+        ''                    -> Bienvenida
+        'registrar-incidencia'-> RegistrarIncidencia  [moduloGuard]  (HU04)
+        'asignar-incidencia'  -> AsignarIncidencia    [moduloGuard]  (HU05)
+        ':modulo'             -> Proximamente         [moduloGuard]
+     '**'                     -> redirige a '' (URL inexistente)
+   Las rutas dentro de 'principal' son "hijas": se muestran dentro del
+   <router-outlet> de Principal, junto al menú lateral.
+
+ app.ts
+   Componente raíz (selector app-root). Importa RouterOutlet y ToastContainer,
+   y obtiene LoadingService para saber si mostrar "Cargando...".
+
+ app.html
+   - @if (loadingService.loading()) -> capa "Cargando..." con spinner
+   - <app-toast-container />       -> mensajes emergentes
+   - <router-outlet />             -> aquí se muestra la página de la ruta actual
+
+ app.scss
+   Estilos de la capa "Cargando..." (fondo semitransparente y círculo que gira).
+
+ app.spec.ts
+   Pruebas: que la app se crea, que / muestra la homepage, que /iniciar-sesion
+   muestra el login y que /principal sin sesión redirige al login.
+
+
+==========================================================================
+ 3. environments/
+==========================================================================
+
+ environment.ts
+   export const environment = { production: false, apiUrl: 'http://localhost:8080/api' }
+   Dirección del backend. Si el backend cambia de servidor, solo se cambia aquí.
+
+
+==========================================================================
+ 4. model/   (forma de los datos, sin lógica)
+==========================================================================
+
+ user-session.ts
+   Modulo       -> { descripcion, url }   opción del menú
+   UserSession  -> { username, nombres, apellidos, rol, rolDescripcion,
+                     modulos, expira }    datos del usuario leídos del token
+
+ incidencia.ts
+   IncidenciaRequest      -> lo que se envía al registrar (codigoEquipo,
+                             problema, usuarioResponsable, area, medioReporte)
+   Incidencia             -> lo que devuelve el backend (codigo "INC-0001",
+                             fechaRegistro, registradoPor, tecnico, estado, etc.)
+   TecnicoDisponibilidad  -> { idTecnico, nombre, carga, limite, disponible }
+
+ iconos.ts
+   iconoModulo(url): devuelve el emoji de cada módulo del menú
+   (ej. 'registrar-incidencia' -> 📝). Si no lo conoce, devuelve 📁.
+
+
+==========================================================================
+ 5. services/   (lógica compartida)
+==========================================================================
+
+ ------------------------------------------------------------------
+ storage.ts -> StorageService
+ ------------------------------------------------------------------
+   Envoltura de localStorage (los datos sobreviven al recargar o cerrar
+   el navegador).
+     getItem(key)        -> lee un valor (null si no existe)
+     setItem(key, value) -> guarda un valor
+     removeItem(key)     -> borra un valor
+   Si mañana se guarda en otro lugar, solo se cambia este archivo.
+
+ ------------------------------------------------------------------
+ session.ts -> SessionService
+ ------------------------------------------------------------------
+   Lee los datos del usuario que vienen DENTRO del token JWT.
+   Exporta TOKEN_KEY = 'user_token' (nombre del token en localStorage).
+     getInfoSession()    -> devuelve UserSession o null si no hay token.
+                            Lo usan el menú, la barra superior, la
+                            bienvenida y los guards.
+     getDecodedToken()   -> (privado) abre el token:
+                            1. toma la parte del medio: token.split('.')[1]
+                            2. cambia - por + y _ por /
+                            3. decodifica Base64 con atob + TextDecoder
+                               (para que salgan bien tildes y ñ)
+                            4. JSON.parse -> objeto
+                            5. si algo falla, devuelve null (try/catch)
+   Nota: el frontend solo LEE el token; la firma la verifica el backend.
+
+ ------------------------------------------------------------------
+ auth.ts -> AuthService
+ ------------------------------------------------------------------
+   Iniciar sesión, cerrar sesión y saber si hay sesión.
+     login(user)    -> POST /api/auth/login con { username, password }.
+                       Con tap() guarda el token en localStorage apenas llega.
+                       Devuelve un Observable (el login se suscribe).
+     logout()       -> borra el token (el backend no guarda sesiones).
+     getToken()     -> devuelve el token o null. Lo usa el auth-interceptor.
+     isLoggedIn()   -> true si hay token y no venció
+                       (expira * 1000 > Date.now()). Lo usa el authGuard.
+
+ ------------------------------------------------------------------
+ incidencia.ts -> IncidenciaService
+ ------------------------------------------------------------------
+   Llamadas al backend de las HU04 y HU05 (url = apiUrl + '/v1').
+     listar()                         -> GET  /incidencias
+     registrar(incidencia)            -> POST /incidencias            (HU04)
+     asignar(idIncidencia, idTecnico) -> PUT  /incidencias/{id}/asignar (HU05, solo JEFE)
+     disponibilidadTecnicos()         -> GET  /tecnicos/disponibilidad  (solo JEFE)
+   Ningún método pone el token: lo agrega el auth-interceptor.
+
+ ------------------------------------------------------------------
+ toast.ts -> ToastService
+ ------------------------------------------------------------------
+   Mensajes emergentes. Tipos: 'success' | 'danger' | 'warning' | 'info'.
+     toasts            -> signal con la lista de mensajes visibles
+     show(msg, type)   -> agrega un mensaje con id único y programa que
+                          se borre solo a los 3 segundos (setTimeout)
+     remove(toast)     -> lo quita (lo llaman el setTimeout y la "×")
+   Uso: this.toast.show('Incidencia registrada', 'success');
+
+ ------------------------------------------------------------------
+ loading.ts -> LoadingService
+ ------------------------------------------------------------------
+   Sabe si hay peticiones en curso para mostrar "Cargando...".
+     peticionesActivas -> (privado) signal con el número de peticiones
+     loading           -> computed: true mientras peticionesActivas > 0
+     show()            -> suma 1 (al enviar una petición)
+     hide()            -> resta 1, nunca baja de 0 (al terminar)
+   Es un contador y no un true/false porque puede haber varias peticiones
+   a la vez (la pantalla de asignación hace 2).
+
+
+==========================================================================
+ 6. interceptors/   (actúan solos en CADA petición HTTP)
+==========================================================================
+
+ loading-interceptor.ts
+   loadingService.show();
+   return next(req).pipe(finalize(() => loadingService.hide()));
+   -> Antes de enviar: "Cargando..." visible. Al terminar (bien o mal): se
+      oculta. Ningún componente tiene que activarlo.
+
+ auth-interceptor.ts  (Bearer Token Interceptor)
+   1. Si la petición es /auth/login, la deja pasar sin token.
+   2. Si hay token, clona la petición y agrega la cabecera:
+        Authorization: Bearer <token>
+   3. Si el backend responde:
+        401 -> borra el token, toast "Tu sesión ha caducado" y va al login
+        403 -> toast "No tienes permiso para realizar esta acción"
+   4. Devuelve el error al componente (throwError) por si quiere hacer algo más.
+
+
+==========================================================================
+ 7. guards/   (deciden si se puede entrar a una página)
+==========================================================================
+
+ auth-guard.ts  (authGuard)
+   Protege /principal. Si AuthService.isLoggedIn() es false, redirige a
+   /iniciar-sesion.
+
+ modulo-guard.ts  (moduloGuard)
+   Protege cada módulo dentro de /principal. Obtiene la URL del módulo
+   (ruta fija o parámetro :modulo) y comprueba que esté en los módulos del
+   token. Si no: toast "No tienes acceso a ese módulo" y vuelve a /principal.
+   Así un usuario no entra a un módulo de otro rol aunque escriba la URL.
+
+
+==========================================================================
+ 8. components/   (pantallas)
+==========================================================================
+
+ ------------------------------------------------------------------
+ HOMEPAGE (pública)  -> ruta ''
+ ------------------------------------------------------------------
+   home/        Junta las secciones: header + hero + modules + process +
+                roles + incidents + footer, y una franja final (CTA).
+   header/      Logo, menú con anclas (#modulos, #proceso...) y botones
+                "Iniciar sesión" (routerLink a /iniciar-sesion) y
+                "Registrar incidencia".
+   hero/        Sección principal: titular, cifras y tarjeta de
+                disponibilidad de técnicos (datos de ejemplo en un arreglo;
+                la barra usa [style.width.%] y la etiqueta usa @if).
+   modules/     8 tarjetas con los módulos del sistema (@for sobre un arreglo).
+   process/     5 pasos del recorrido de una incidencia y los estados
+                Pendiente -> Solucionado.
+   roles/       Tarjetas de Jefe, Técnicos y Personal de sistemas con lo que
+                puede hacer cada uno.
+   incidents/   Tabla de incidencias de ejemplo (interfaz Incident con
+                estado 'Pendiente' | 'Solucionado').
+   footer/      Pie de página en columnas.
+   Nota: la homepage no llama al backend; sus datos son de ejemplo.
+
+ ------------------------------------------------------------------
+ acceso/inicio-sesion/  -> ruta 'iniciar-sesion'
+ ------------------------------------------------------------------
+   Tarjeta con panel azul (marca) y formulario.
+     username, password -> conectados con [(ngModel)]
+     ingresar()         -> 1. si hay campos vacíos: toast naranja y termina
+                           2. auth.login(...).subscribe:
+                              next  -> toast "¡Bienvenido, <nombre>!" y
+                                       navega a /principal
+                              error -> toast rojo con mensajeDeError()
+     mensajeDeError(err)-> status 0: "No se pudo conectar con el servidor"
+                           401: "Usuario o contraseña incorrectos"
+                           otro: el mensaje del backend
+   Botón "← Anterior": routerLink="/" (vuelve a la homepage).
+
+ ------------------------------------------------------------------
+ principal/  -> ruta 'principal' (layout de la zona privada)
+ ------------------------------------------------------------------
+   Menú lateral + barra superior + <router-outlet> para el módulo elegido.
+     user          -> SessionService.getInfoSession() (datos del token)
+     iniciales()   -> "Jorge" + "García López" -> "JG" (avatar)
+     icono         -> iconoModulo (emoji de cada opción)
+     cerrarSesion()-> auth.logout(), toast "Sesión cerrada" y va al login
+   MENÚ DINÁMICO (principal.html):
+     @for (modulo of user?.modulos; track modulo.url) {
+       <a [routerLink]="['/principal', modulo.url]" routerLinkActive="active">
+     }
+   El menú no está escrito en el código: viene de la tabla rol_modulo del
+   backend, dentro del token. Cada rol ve opciones distintas.
+   routerLinkActive pinta de naranja la opción de la página actual.
+
+   principal/bienvenida/  -> ruta hija ''
+     Saludo "Hola, <nombre>", rol y tarjetas de acceso a sus módulos.
+
+   principal/proximamente/ -> ruta hija ':modulo'
+     Página "En construcción" para módulos de sprints futuros.
+     parametros  -> toSignal(ActivatedRoute.paramMap): el :modulo de la URL
+     nombreModulo-> computed: busca la descripción del módulo en el token
+     (se usa signal para que el nombre cambie al pasar de un módulo a otro)
+
+ ------------------------------------------------------------------
+ incidencias/registrar-incidencia/  -> HU04 (cualquier rol)
+ ------------------------------------------------------------------
+     registradoPor      -> nombre del usuario del token (se muestra)
+     form               -> datos del formulario ([(ngModel)])
+     incidencias        -> signal con la lista para la tabla
+     ngOnInit()         -> al abrir: cargarIncidencias()
+     cargarIncidencias()-> IncidenciaService.listar() -> incidencias.set(...)
+     registrar()        -> valida obligatorios (toast naranja si faltan) y
+                           llama a registrar():
+                             next  -> toast "INC-000X registrada", limpia
+                                      el formulario y recarga la tabla
+                             error -> toast rojo con el mensaje del backend
+     formVacio()        -> formulario en blanco (medio por defecto: Teléfono)
+   La fecha/hora y quién registra los pone el backend.
+   La tabla usa el pipe date ('dd/MM/yyyy HH:mm') y @empty si no hay datos.
+
+ ------------------------------------------------------------------
+ incidencias/asignar-incidencia/  -> HU05 (solo JEFE)
+ ------------------------------------------------------------------
+     incidencias, tecnicos -> signals con datos del backend
+     seleccion             -> técnico elegido por fila { idIncidencia: idTecnico }
+     sinAsignar            -> computed: PENDIENTES sin técnico
+     asignadas             -> computed: PENDIENTES con técnico
+     ngOnInit()            -> cargarDatos()
+     cargarDatos()         -> listar() y disponibilidadTecnicos(); reinicia
+                              cada selección a null ("Elegir técnico...")
+     asignar(incidencia)   -> si no eligió técnico: toast naranja.
+                              Si eligió: IncidenciaService.asignar():
+                                next  -> toast "INC-000X asignada a ..." y recarga
+                                error -> toast con el mensaje (ej. "El técnico
+                                         ya alcanzó su límite de atención");
+                                         el 403 ya lo avisa el interceptor
+     porcentaje(tecnico)   -> ancho de la barra de carga (carga / limite)
+   En la lista de técnicos, los que no tienen cupo aparecen desactivados
+   ([disabled]="!tecnico.disponible"). El backend vuelve a validarlo.
+
+ ------------------------------------------------------------------
+ toast-container/
+ ------------------------------------------------------------------
+   Recorre toastService.toasts() con @for y muestra cada mensaje con su
+   color (toast-success, toast-danger, toast-warning, toast-info) y una "×".
+   Está fijo arriba a la derecha, debajo de la barra superior.
+
+
+==========================================================================
+ 9. FLUJOS COMPLETOS
+==========================================================================
+
+ LOGIN
+   inicio-sesion.ingresar()
+     -> AuthService.login() -> HttpClient POST /api/auth/login
+     -> loading-interceptor ("Cargando...")
+     -> auth-interceptor (es login: sin token)
+     -> backend valida y responde { token }
+     -> AuthService guarda el token en localStorage
+     -> toast de bienvenida -> navega a /principal
+     -> authGuard (¿hay sesión?) -> Principal arma el menú desde el token
+
+ PETICIÓN PROTEGIDA (ej. registrar incidencia)
+   registrar-incidencia.registrar()
+     -> IncidenciaService.registrar() -> POST /api/v1/incidencias
+     -> loading-interceptor ("Cargando...")
+     -> auth-interceptor agrega "Authorization: Bearer <token>"
+     -> backend verifica el token y el rol, guarda y responde
+     -> toast verde, se limpia el formulario y se recarga la tabla
+
+ CAMBIO DE MÓDULO
+   clic en el menú -> /principal/<modulo>
+     -> authGuard (¿sesión?) -> moduloGuard (¿el rol tiene el módulo?)
+     -> el componente se muestra en el <router-outlet> de Principal
+
+ ERRORES
+   401 (token vencido/alterado) -> auth-interceptor: logout + toast + login
+   403 (rol sin permiso)        -> auth-interceptor: toast "No tienes permiso"
+   400 (datos o regla)          -> el componente muestra el mensaje del backend
+   status 0 (backend apagado)   -> toast "No se pudo conectar con el servidor"
+   URL de módulo ajeno          -> moduloGuard lo bloquea
+
+ CERRAR SESIÓN / RECARGAR
+   Cerrar sesión -> se borra el token -> login
+   Recargar (F5) -> el token sigue en localStorage -> sigues dentro
+
+
+==========================================================================
+ 10. PRUEBAS (*.spec.ts)   -> se ejecutan con: ng test
+==========================================================================
+
+ app.spec.ts                      rutas: homepage, login y /principal sin sesión
+ inicio-sesion.spec.ts            se crea y muestra toast si faltan datos
+ principal.spec.ts                se crea
+ interceptors/auth-interceptor.spec.ts
+                                  agrega el Bearer, no lo pone en el login y
+                                  borra el token ante un 401
+ services/session.spec.ts         lee nombre, rol y módulos del token
+                                  respetando las tildes
+
+==========================================================================
