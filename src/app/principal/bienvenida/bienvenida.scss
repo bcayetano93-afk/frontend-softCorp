@@ -1,0 +1,89 @@
+.welcome {
+  margin-bottom: 28px;
+  padding: 32px;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 55%, #1d4e7a 100%);
+  border-radius: 16px;
+}
+
+.welcome-label {
+  color: #9fd3ff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.welcome h1 {
+  margin: 8px 0;
+  font-size: 30px;
+}
+
+.welcome p {
+  color: #c8d6e5;
+}
+
+.welcome strong {
+  color: var(--white);
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.module-card {
+  display: block;
+  padding: 22px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.module-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--orange);
+  box-shadow: 0 14px 30px rgba(15, 42, 71, 0.1);
+}
+
+.module-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  background: #fff1eb;
+  border-radius: 12px;
+  font-size: 24px;
+}
+
+.module-card h3 {
+  margin-bottom: 8px;
+  color: var(--navy);
+  font-size: 16px;
+}
+
+.module-link {
+  color: var(--orange);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 1100px) {
+  .modules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .modules-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome {
+    padding: 24px;
+  }
+}

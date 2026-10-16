@@ -1,3 +1,13 @@
-<app-header />
-<app-home />
-<app-footer />
+<!-- Pantalla de "Cargando..." (la activa el interceptor de carga) -->
+@if (loadingService.loading()) {
+  <div class="loading-overlay">
+    <div class="spinner"></div>
+    <span>Cargando...</span>
+  </div>
+}
+
+<!-- Mensajes (toasts) -->
+<app-toast-container />
+
+<!-- Aquí se muestra la página de la ruta actual (ver app.routes.ts) -->
+<router-outlet />

@@ -1,0 +1,69 @@
+<section class="login-page">
+  <div class="login-card">
+    <!-- Panel izquierdo: marca y mensaje -->
+    <div class="login-info">
+      <div class="brand">
+        <span class="brand-logo">SC</span>
+        <span class="brand-text">
+          <strong>SoftCorporation</strong>
+          <small>Soporte y Sistemas</small>
+        </span>
+      </div>
+
+      <h2>Bienvenido al sistema de soporte técnico</h2>
+      <p>
+        Registra incidencias, revisa tus tareas asignadas y consulta el historial
+        de los equipos de la empresa.
+      </p>
+
+      <ul>
+        <li>Registro de incidencias</li>
+        <li>Asignación de técnicos</li>
+        <li>Historial de equipos</li>
+      </ul>
+    </div>
+
+    <!-- Panel derecho: formulario -->
+    <div class="login-form">
+      <!-- Regresa a la homepage -->
+      <a class="btn-back" routerLink="/">← Anterior</a>
+
+      <h1>Iniciar sesión</h1>
+      <p class="subtitle">Ingresa con tu cuenta del área de Soporte y Sistemas.</p>
+
+      <!-- Al enviar el formulario se llama a ingresar() del archivo .ts -->
+      <form (ngSubmit)="ingresar()">
+        <label for="usuario">Usuario</label>
+        <input
+          id="usuario"
+          name="username"
+          type="text"
+          placeholder="Ej. jefe"
+          autocomplete="username"
+          [(ngModel)]="username"
+        />
+
+        <label for="password">Contraseña</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Ingresa tu contraseña"
+          autocomplete="current-password"
+          [(ngModel)]="password"
+        />
+
+        <div class="form-options">
+          <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <!-- Los errores se muestran como toast (mensaje en la esquina) -->
+        <button class="btn btn-primary" type="submit">Ingresar</button>
+      </form>
+
+      <p class="help">
+        ¿Problemas para ingresar? Comunícate con el área de Soporte (anexo 204).
+      </p>
+    </div>
+  </div>
+</section>

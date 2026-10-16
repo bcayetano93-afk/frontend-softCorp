@@ -1,0 +1,21 @@
+@if (user) {
+  <section class="welcome">
+    <span class="welcome-label">Panel principal</span>
+    <h1>Hola, {{ user.nombres }} 👋</h1>
+    <p>
+      Bienvenido al sistema de Soporte y Sistemas. Ingresaste como
+      <strong>{{ user.rolDescripcion }}</strong>.
+    </p>
+  </section>
+
+  <h2 class="card-title">Tus módulos</h2>
+  <div class="modules-grid">
+    @for (modulo of user.modulos; track modulo.url) {
+      <a class="module-card" [routerLink]="['/principal', modulo.url]">
+        <span class="module-icon">{{ icono(modulo.url) }}</span>
+        <h3>{{ modulo.descripcion }}</h3>
+        <span class="module-link">Abrir →</span>
+      </a>
+    }
+  </div>
+}

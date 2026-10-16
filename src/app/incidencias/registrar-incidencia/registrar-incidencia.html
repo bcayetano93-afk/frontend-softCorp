@@ -1,0 +1,105 @@
+<h1 class="page-title">Registro de incidencias</h1>
+<p class="page-subtitle">Registra los problemas que reportan los usuarios por email o teléfono.</p>
+
+<!-- Formulario -->
+<section class="card">
+  <h2 class="card-title">Nueva incidencia</h2>
+
+  <form (ngSubmit)="registrar()">
+    <div class="form-grid">
+      <div class="field">
+        <label for="codigoEquipo">Código del equipo *</label>
+        <input id="codigoEquipo" name="codigoEquipo" placeholder="Ej. PC-ADM-014" [(ngModel)]="form.codigoEquipo" />
+      </div>
+
+      <div class="field">
+        <label for="medioReporte">Medio del reporte *</label>
+        <select id="medioReporte" name="medioReporte" [(ngModel)]="form.medioReporte">
+          <option value="TELEFONO">Teléfono</option>
+          <option value="EMAIL">Email</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="usuarioResponsable">Usuario responsable del equipo *</label>
+        <input
+          id="usuarioResponsable"
+          name="usuarioResponsable"
+          placeholder="Ej. Rosa Paredes"
+          [(ngModel)]="form.usuarioResponsable"
+        />
+      </div>
+
+      <div class="field">
+        <label for="area">Área del usuario</label>
+        <input id="area" name="area" placeholder="Ej. Administración" [(ngModel)]="form.area" />
+      </div>
+
+      <div class="field field-full">
+        <label for="problema">Problema que presenta *</label>
+        <textarea
+          id="problema"
+          name="problema"
+          rows="3"
+          placeholder="Describe el problema del equipo"
+          [(ngModel)]="form.problema"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Datos que se completan solos -->
+    <p class="auto-info">
+      📌 Registrado por: <strong>{{ registradoPor }}</strong> · La fecha y hora se guardan automáticamente.
+    </p>
+
+    <button class="btn-form" type="submit">Registrar incidencia</button>
+  </form>
+</section>
+
+<!-- Lista de incidencias -->
+<section class="card">
+  <h2 class="card-title">Incidencias registradas</h2>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Equipo</th>
+          <th>Problema</th>
+          <th>Usuario responsable</th>
+          <th>Área</th>
+          <th>Medio</th>
+          <th>Fecha y hora</th>
+          <th>Registrado por</th>
+          <th>Técnico</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (incidencia of incidencias(); track incidencia.idIncidencia) {
+          <tr>
+            <td class="code">{{ incidencia.codigo }}</td>
+            <td><strong>{{ incidencia.codigoEquipo }}</strong></td>
+            <td>{{ incidencia.problema }}</td>
+            <td>{{ incidencia.usuarioResponsable }}</td>
+            <td>{{ incidencia.area || '-' }}</td>
+            <td>{{ incidencia.medioReporte === 'EMAIL' ? 'Email' : 'Teléfono' }}</td>
+            <td class="nowrap">{{ incidencia.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ incidencia.registradoPor }}</td>
+            <td>{{ incidencia.tecnico ?? 'Sin asignar' }}</td>
+            <td>
+              <span class="badge" [class]="'badge badge-' + incidencia.estado.toLowerCase()">
+                {{ incidencia.estado === 'PENDIENTE' ? 'Pendiente' : 'Solucionado' }}
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty" colspan="10">Todavía no hay incidencias registradas.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

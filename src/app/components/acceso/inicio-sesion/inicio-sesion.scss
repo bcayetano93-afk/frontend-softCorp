@@ -1,0 +1,193 @@
+/* Fondo de toda la pantalla, con la tarjeta centrada */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 55%, #1d4e7a 100%);
+}
+
+/* Tarjeta con dos columnas */
+.login-card {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  overflow: hidden;
+  background: var(--white);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- Panel izquierdo ---------- */
+.login-info {
+  width: 45%;
+  padding: 48px 40px;
+  color: var(--white);
+  background: var(--navy);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 48px;
+}
+
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orange);
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+.brand-text strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.brand-text small {
+  color: #9fb3c8;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.login-info h2 {
+  margin-bottom: 14px;
+  font-size: 26px;
+  line-height: 1.3;
+}
+
+.login-info p {
+  color: #c8d6e5;
+  font-size: 15px;
+}
+
+.login-info ul {
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.login-info li {
+  padding: 6px 0;
+  font-size: 15px;
+}
+
+.login-info li::before {
+  content: '✓';
+  margin-right: 10px;
+  color: var(--orange);
+  font-weight: 700;
+}
+
+/* ---------- Panel derecho (formulario) ---------- */
+.login-form {
+  width: 55%;
+  padding: 48px 44px;
+}
+
+/* Botón "Anterior" */
+.btn-back {
+  display: inline-block;
+  margin-bottom: 24px;
+  padding: 7px 14px;
+  color: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-back:hover {
+  background: var(--bg-soft);
+  border-color: var(--navy);
+}
+
+.login-form h1 {
+  color: var(--navy);
+  font-size: 30px;
+}
+
+.subtitle {
+  margin: 6px 0 28px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 6px;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input[type='text'],
+input[type='password'] {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 15px;
+  transition: border-color 0.2s;
+}
+
+/* Al hacer clic en el campo, el borde se pone naranja */
+input[type='text']:focus,
+input[type='password']:focus {
+  border-color: var(--orange);
+  outline: none;
+}
+
+.form-options {
+  margin-bottom: 24px;
+  font-size: 14px;
+  text-align: right;
+}
+
+.form-options a {
+  color: var(--orange);
+  font-weight: 600;
+}
+
+.form-options a:hover {
+  text-decoration: underline;
+}
+
+button {
+  width: 100%;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.help {
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* En celular el panel azul se oculta y queda solo el formulario */
+@media (max-width: 720px) {
+  .login-info {
+    display: none;
+  }
+
+  .login-form {
+    width: 100%;
+    padding: 36px 24px;
+  }
+}

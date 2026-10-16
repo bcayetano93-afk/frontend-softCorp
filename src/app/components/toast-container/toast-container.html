@@ -1,0 +1,6 @@
+@for (toast of toastService.toasts(); track toast.id) {
+  <div [class]="'toast toast-' + toast.type" role="alert">
+    <span>{{ toast.message }}</span>
+    <button type="button" aria-label="Cerrar" (click)="toastService.remove(toast)">×</button>
+  </div>
+}
