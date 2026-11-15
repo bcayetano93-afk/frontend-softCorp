@@ -5,8 +5,8 @@ import { environment } from '../environments/environment';
 import { SessionService, TOKEN_KEY } from './session';
 import { StorageService } from './storage';
 
-interface LoginRequest {
-  username: string;
+export interface LoginRequest {
+  email: string;
   password: string;
 }
 
@@ -20,7 +20,7 @@ export class AuthService {
   private storage = inject(StorageService);
   private session = inject(SessionService);
 
-  // Envía usuario y contraseña; si son correctos guarda el token en localStorage
+  // Envía correo y contraseña; si son correctos guarda el token en localStorage
   login(user: LoginRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${environment.apiUrl}/auth/login`, user)

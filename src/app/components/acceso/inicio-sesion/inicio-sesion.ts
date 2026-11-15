@@ -1,13 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth';
 import { SessionService } from '../../../services/session';
 import { ToastService } from '../../../services/toast';
+import { RegexConstants, onEnterKey } from '../../../util/constant';
 
 @Component({
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, ReactiveFormsModule],
   selector: 'app-inicio-sesion',
   styleUrl: './inicio-sesion.scss',
   templateUrl: './inicio-sesion.html',
@@ -18,19 +19,52 @@ export class InicioSesion {
   private toast = inject(ToastService);
   private router = inject(Router);
 
-  // Valores del formulario (conectados con [(ngModel)] en el HTML)
-  username = '';
-  password = '';
+  public RG = RegexConstants;
+  isPasswordVisible = false;
+
+  form = new FormGroup({
+    email: new FormControl('', [
+      Validators.required,
+      Validators.email,
+      Validators.minLength(6),
+      Validators.maxLength(20),
+    ]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(4),
+      Validators.maxLength(12),
+    ]),
+  });
+
+  togglePasswordVisibility(): void {
+    this.isPasswordVisible = !this.isPasswordVisible;
+  }
+
+  onEmailInput(event: Event): void {
+    this.RG.email(event);
+    const value = (event.target as HTMLInputElement).value;
+    this.form.controls.email.setValue(value, { emitEvent: false });
+  }
+
+  onEnterKey(event: Event): void {
+    onEnterKey(event);
+  }
 
   ingresar(): void {
-    if (!this.username.trim() || !this.password) {
-      this.toast.show('Ingresa tu usuario y contraseña.', 'warning');
+    const email = (this.form.value.email ?? '').trim();
+    const password = this.form.value.password ?? '';
+
+    if (!email || !password) {
+      this.toast.show('Ingresa tu correo y contraseña.', 'warning');
+      return;
+    }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.toast.show('Verifica el formato del correo y la contraseña.', 'warning');
       return;
     }
 
-    // El "Cargando..." lo muestra el interceptor de carga
-    this.auth.login({ username: this.username.trim(), password: this.password }).subscribe({
-      // Login correcto: el token ya se guardó en localStorage
+    this.auth.login({ email, password }).subscribe({
       next: () => {
         const usuario = this.session.getInfoSession();
         this.toast.show(`¡Bienvenido, ${usuario?.nombres}!`, 'success');
@@ -47,9 +81,8 @@ export class InicioSesion {
       return 'No se pudo conectar con el servidor. Verifica que el backend esté encendido.';
     }
     if (err.status === 401) {
-      return 'Usuario o contraseña incorrectos.';
+      return 'Correo o contraseña incorrectos.';
     }
-    // Mensaje que envía el backend (ej. "El usuario es obligatorio")
     return err.error?.message ?? 'Ocurrió un error. Inténtalo de nuevo.';
   }
 }

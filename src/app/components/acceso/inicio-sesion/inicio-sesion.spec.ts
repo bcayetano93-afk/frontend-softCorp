@@ -27,7 +27,23 @@ describe('InicioSesion', () => {
   it('should show a toast when the fields are empty', () => {
     component.ingresar();
     const toasts = TestBed.inject(ToastService).toasts();
-    expect(toasts[0].message).toBe('Ingresa tu usuario y contraseña.');
+    expect(toasts[0].message).toBe('Ingresa tu correo y contraseña.');
     expect(toasts[0].type).toBe('warning');
+  });
+
+  it('should disable submit when email is invalid', () => {
+    component.form.setValue({ email: 'correo-invalido', password: '1234' });
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(component.form.invalid).toBe(true);
+    expect(button.disabled).toBe(true);
+  });
+
+  it('should enable submit when email and password satisfy SIGCON constraints', () => {
+    component.form.setValue({ email: 'jefe@softcorp.com', password: '1234' });
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(component.form.valid).toBe(true);
+    expect(button.disabled).toBe(false);
   });
 });

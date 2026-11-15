@@ -135,6 +135,7 @@ label {
 }
 
 input[type='text'],
+input[type='email'],
 input[type='password'] {
   margin-bottom: 18px;
   padding: 12px 14px;
@@ -147,37 +148,55 @@ input[type='password'] {
 
 /* Al hacer clic en el campo, el borde se pone naranja */
 input[type='text']:focus,
+input[type='email']:focus,
 input[type='password']:focus {
   border-color: var(--orange);
   outline: none;
 }
 
-.form-options {
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
   margin-bottom: 24px;
-  font-size: 14px;
-  text-align: right;
 }
 
-.form-options a {
-  color: var(--orange);
-  font-weight: 600;
+.password-wrapper input {
+  width: 100%;
+  margin-bottom: 0;
+  padding-right: 44px;
 }
 
-.form-options a:hover {
-  text-decoration: underline;
+.btn-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto !important;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
-button {
+.btn-eye:hover {
+  color: var(--navy);
+}
+
+button.btn {
   width: 100%;
   font-family: inherit;
   cursor: pointer;
 }
 
-.help {
-  margin-top: 24px;
-  color: var(--muted);
-  font-size: 13px;
-  text-align: center;
+button.btn:disabled {
+  background: #c4ccd6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* En celular el panel azul se oculta y queda solo el formulario */
