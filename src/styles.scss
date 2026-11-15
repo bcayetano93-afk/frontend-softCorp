@@ -294,3 +294,63 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+/* Barra de filtros y acciones de tablas (patrón SIGCON PC2/PC3) */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filter-bar input,
+.filter-bar select {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.filter-bar input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.btn-secondary {
+  padding: 9px 16px;
+  color: var(--navy);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  border-color: var(--navy);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  color: var(--white);
+  background: var(--navy);
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-action:disabled {
+  background: #c4ccd6;
+  cursor: not-allowed;
+}
+
