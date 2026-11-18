@@ -32,3 +32,44 @@ export interface TecnicoDisponibilidad {
   limite: number;
   disponible: boolean;
 }
+
+// --- Sprint 3 (persistido en frontend con StorageService) ---
+export type EstadoRepuesto = 'SOLICITADO' | 'EN_ESPERA' | 'RECIBIDO';
+export type LugarAtencion = 'OFICINA_USUARIO' | 'AREA_SOPORTE';
+
+export interface SolicitudRepuesto {
+  idSolicitud: number;
+  idIncidencia: number;
+  codigoIncidencia: string;
+  codigoEquipo: string;
+  repuesto: string;
+  cantidad: number;
+  motivo: string;
+  equipoTrasladado: boolean;
+  fechaSolicitud: string;
+  tecnicoSolicitante: string;
+  estado: EstadoRepuesto;
+}
+
+export interface InformeTecnico {
+  idInforme: number;
+  idIncidencia: number;
+  codigoIncidencia: string;
+  codigoEquipo: string;
+  diagnostico: string;
+  solucion: string;
+  piezasCambiadas: string;
+  lugarAtencion: LugarAtencion;
+  fechaSolucion: string;
+  tecnico: string;
+}
+
+export interface FallaDiccionario {
+  idFalla: number;
+  titulo: string;
+  palabraClave: string;
+  sintoma: string;
+  solucion: string;
+  actualizadoPor: string;
+  fechaActualizacion: string;
+}
