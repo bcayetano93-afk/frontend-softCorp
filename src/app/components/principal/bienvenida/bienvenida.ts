@@ -3,11 +3,11 @@ import { RouterLink } from '@angular/router';
 import { iconoModulo } from '../../../model/iconos';
 import { UserSession } from '../../../model/user-session';
 import { SessionService } from '../../../services/session';
+import { ChartIncidencias } from '../../dashboards/chart-incidencias/chart-incidencias';
 
-// Inicio de la zona privada: saludo y accesos a los módulos del rol
 @Component({
   selector: 'app-bienvenida',
-  imports: [RouterLink],
+  imports: [RouterLink, ChartIncidencias],
   templateUrl: './bienvenida.html',
   styleUrl: './bienvenida.scss',
 })

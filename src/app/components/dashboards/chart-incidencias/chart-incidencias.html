@@ -1,0 +1,36 @@
+<section class="charts-grid">
+  <div class="card chart-card">
+    <apx-chart
+      [series]="donutChart().series"
+      [chart]="donutChart().chart"
+      [labels]="donutChart().labels"
+      [colors]="donutChart().colors"
+      [title]="donutChart().title"
+      [legend]="donutChart().legend"
+    ></apx-chart>
+  </div>
+
+  <div class="card chart-card">
+    <apx-chart
+      [series]="areaChart().series"
+      [chart]="areaChart().chart"
+      [xaxis]="areaChart().xaxis"
+      [stroke]="areaChart().stroke"
+      [fill]="areaChart().fill"
+      [colors]="areaChart().colors"
+      [dataLabels]="areaChart().dataLabels"
+      [title]="areaChart().title"
+    ></apx-chart>
+  </div>
+
+  <div class="card chart-card">
+    <apx-chart
+      [series]="radialChart().series"
+      [chart]="radialChart().chart"
+      [labels]="radialChart().labels"
+      [colors]="radialChart().colors"
+      [plotOptions]="radialChart().plotOptions"
+      [title]="radialChart().title"
+    ></apx-chart>
+  </div>
+</section>
