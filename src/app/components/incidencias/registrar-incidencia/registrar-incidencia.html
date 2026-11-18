@@ -5,16 +5,25 @@
 <section class="card">
   <h2 class="card-title">Nueva incidencia</h2>
 
-  <form (ngSubmit)="registrar()">
+  <form #incFrm="ngForm" (ngSubmit)="registrar()" (keydown.enter)="onEnterKey($event)" autocomplete="off">
     <div class="form-grid">
       <div class="field">
         <label for="codigoEquipo">Código del equipo *</label>
-        <input id="codigoEquipo" name="codigoEquipo" placeholder="Ej. PC-ADM-014" [(ngModel)]="form.codigoEquipo" />
+        <input
+          id="codigoEquipo"
+          name="codigoEquipo"
+          required
+          minlength="4"
+          maxlength="30"
+          placeholder="Ej. PC-ADM-014"
+          [(ngModel)]="form.codigoEquipo"
+          (input)="RG.codigoEquipo($event)"
+        />
       </div>
 
       <div class="field">
         <label for="medioReporte">Medio del reporte *</label>
-        <select id="medioReporte" name="medioReporte" [(ngModel)]="form.medioReporte">
+        <select id="medioReporte" name="medioReporte" [(ngModel)]="form.medioReporte" required>
           <option value="TELEFONO">Teléfono</option>
           <option value="EMAIL">Email</option>
         </select>
@@ -25,14 +34,25 @@
         <input
           id="usuarioResponsable"
           name="usuarioResponsable"
+          required
+          minlength="2"
+          maxlength="150"
           placeholder="Ej. Rosa Paredes"
           [(ngModel)]="form.usuarioResponsable"
+          (input)="RG.name($event)"
         />
       </div>
 
       <div class="field">
         <label for="area">Área del usuario</label>
-        <input id="area" name="area" placeholder="Ej. Administración" [(ngModel)]="form.area" />
+        <input
+          id="area"
+          name="area"
+          maxlength="100"
+          placeholder="Ej. Administración"
+          [(ngModel)]="form.area"
+          (input)="RG.text($event)"
+        />
       </div>
 
       <div class="field field-full">
@@ -41,24 +61,42 @@
           id="problema"
           name="problema"
           rows="3"
+          required
+          minlength="3"
+          maxlength="300"
           placeholder="Describe el problema del equipo"
           [(ngModel)]="form.problema"
+          (input)="RG.text($event)"
         ></textarea>
       </div>
     </div>
 
-    <!-- Datos que se completan solos -->
     <p class="auto-info">
       📌 Registrado por: <strong>{{ registradoPor }}</strong> · La fecha y hora se guardan automáticamente.
     </p>
 
-    <button class="btn-form" type="submit">Registrar incidencia</button>
+    <button class="btn-form" type="submit" [disabled]="incFrm.invalid">Registrar incidencia</button>
   </form>
 </section>
 
-<!-- Lista de incidencias -->
+<!-- Filtros y lista de incidencias -->
 <section class="card">
-  <h2 class="card-title">Incidencias registradas</h2>
+  <h2 class="card-title">Incidencias registradas ({{ incidencias().length }})</h2>
+
+  <div class="filter-bar">
+    <input
+      type="text"
+      placeholder="Buscar por código, equipo, problema, responsable o área..."
+      [(ngModel)]="filtro.texto"
+      (input)="applyFilter()"
+    />
+    <select [(ngModel)]="filtro.estado" (change)="applyFilter()">
+      <option value="TODOS">Todos los estados</option>
+      <option value="PENDIENTE">Pendiente</option>
+      <option value="SOLUCIONADO">Solucionado</option>
+    </select>
+    <button class="btn-secondary" type="button" (click)="clearFilter()">Limpiar</button>
+  </div>
 
   <div class="table-wrapper">
     <table class="data-table">
@@ -96,7 +134,7 @@
           </tr>
         } @empty {
           <tr>
-            <td class="empty" colspan="10">Todavía no hay incidencias registradas.</td>
+            <td class="empty" colspan="10">No se encontraron incidencias con los filtros aplicados.</td>
           </tr>
         }
       </tbody>
