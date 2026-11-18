@@ -1,0 +1,27 @@
+.alert-banner {
+  padding: 14px 20px;
+  color: var(--navy);
+  background: #fdf3dc;
+  border-color: #f3d28f;
+}
+
+.toggle-mine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--navy);
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.code {
+  color: var(--orange);
+  font-weight: 700;
+  white-space: nowrap;
+}

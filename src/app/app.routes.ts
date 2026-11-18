@@ -8,7 +8,7 @@ import { Principal } from './components/principal/principal';
 import { Proximamente } from './components/principal/proximamente/proximamente';
 import { authGuard } from './guards/auth-guard';
 import { moduloGuard } from './guards/modulo-guard';
-
+import { MisTareas } from './components/incidencias/mis-tareas/mis-tareas';
 // Páginas de la aplicación: cada ruta (URL) muestra un componente
 export const routes: Routes = [
   { path: '', component: Home },
@@ -23,6 +23,8 @@ export const routes: Routes = [
       // Sprint 2
       { path: 'registrar-incidencia', component: RegistrarIncidencia, canActivate: [moduloGuard] },
       { path: 'asignar-incidencia', component: AsignarIncidencia, canActivate: [moduloGuard] },
+            // Sprint 3
+      { path: 'mis-tareas', component: MisTareas, canActivate: [moduloGuard] },
       // Módulos de los siguientes sprints
       { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] },
     ],
