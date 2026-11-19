@@ -1,4 +1,3 @@
-// Datos que se envían al registrar una incidencia
 export interface IncidenciaRequest {
   codigoEquipo: string;
   problema: string;
@@ -7,10 +6,9 @@ export interface IncidenciaRequest {
   medioReporte: 'EMAIL' | 'TELEFONO';
 }
 
-// Incidencia que devuelve el backend
 export interface Incidencia {
   idIncidencia: number;
-  codigo: string; // ej. INC-0007
+  codigo: string;
   codigoEquipo: string;
   problema: string;
   usuarioResponsable: string;
@@ -24,11 +22,51 @@ export interface Incidencia {
   estado: 'PENDIENTE' | 'SOLUCIONADO';
 }
 
-// Carga de un técnico frente a su límite de atención
 export interface TecnicoDisponibilidad {
   idTecnico: number;
   nombre: string;
   carga: number;
   limite: number;
   disponible: boolean;
+}
+
+// --- Sprint 3 (persistido en frontend con StorageService) ---
+export type EstadoRepuesto = 'SOLICITADO' | 'EN_ESPERA' | 'RECIBIDO';
+export type LugarAtencion = 'OFICINA_USUARIO' | 'AREA_SOPORTE';
+
+export interface SolicitudRepuesto {
+  idSolicitud: number;
+  idIncidencia: number;
+  codigoIncidencia: string;
+  codigoEquipo: string;
+  repuesto: string;
+  cantidad: number;
+  motivo: string;
+  equipoTrasladado: boolean;
+  fechaSolicitud: string;
+  tecnicoSolicitante: string;
+  estado: EstadoRepuesto;
+}
+
+export interface InformeTecnico {
+  idInforme: number;
+  idIncidencia: number;
+  codigoIncidencia: string;
+  codigoEquipo: string;
+  diagnostico: string;
+  solucion: string;
+  piezasCambiadas: string;
+  lugarAtencion: LugarAtencion;
+  fechaSolucion: string;
+  tecnico: string;
+}
+
+export interface FallaDiccionario {
+  idFalla: number;
+  titulo: string;
+  palabraClave: string;
+  sintoma: string;
+  solucion: string;
+  actualizadoPor: string;
+  fechaActualizacion: string;
 }

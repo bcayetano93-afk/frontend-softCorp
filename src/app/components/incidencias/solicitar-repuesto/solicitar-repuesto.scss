@@ -1,0 +1,14 @@
+.check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.code {
+  color: var(--orange);
+  font-weight: 700;
+  white-space: nowrap;
+}

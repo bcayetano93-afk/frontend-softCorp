@@ -1,0 +1,113 @@
+<h1 class="page-title">Informe técnico</h1>
+<p class="page-subtitle">Registra el diagnóstico, la solución aplicada y cierra la incidencia como Solucionado.</p>
+
+<section class="card">
+  <h2 class="card-title">Registrar informe de cierre</h2>
+
+  <form #infFrm="ngForm" (ngSubmit)="registrarInforme()" (keydown.enter)="onEnterKey($event)" autocomplete="off">
+    <div class="form-grid">
+      <div class="field">
+        <label for="incidencia">Incidencia pendiente *</label>
+        <select id="incidencia" name="idIncidencia" [(ngModel)]="form.idIncidencia" required>
+          <option [ngValue]="null">Seleccionar incidencia...</option>
+          @for (inc of incidenciasPendientes(); track inc.idIncidencia) {
+            <option [ngValue]="inc.idIncidencia">
+              {{ inc.codigo }} — {{ inc.codigoEquipo }} ({{ inc.problema }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="lugarAtencion">Lugar donde se solucionó *</label>
+        <select id="lugarAtencion" name="lugarAtencion" [(ngModel)]="form.lugarAtencion" required>
+          <option value="OFICINA_USUARIO">En la oficina del usuario</option>
+          <option value="AREA_SOPORTE">En el área de soporte</option>
+        </select>
+      </div>
+
+      <div class="field field-full">
+        <label for="piezasCambiadas">Piezas cambiadas</label>
+        <input
+          id="piezasCambiadas"
+          name="piezasCambiadas"
+          maxlength="200"
+          placeholder="Ej. Teclado USB Logitech / Ninguna"
+          [(ngModel)]="form.piezasCambiadas"
+          (input)="RG.text($event)"
+        />
+      </div>
+
+      <div class="field">
+        <label for="diagnostico">Diagnóstico técnico *</label>
+        <textarea
+          id="diagnostico"
+          name="diagnostico"
+          rows="3"
+          required
+          minlength="3"
+          maxlength="300"
+          placeholder="Causa raíz encontrada"
+          [(ngModel)]="form.diagnostico"
+          (input)="RG.text($event)"
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label for="solucion">Solución aplicada *</label>
+        <textarea
+          id="solucion"
+          name="solucion"
+          rows="3"
+          required
+          minlength="3"
+          maxlength="300"
+          placeholder="Trabajo realizado para resolver el problema"
+          [(ngModel)]="form.solucion"
+          (input)="RG.text($event)"
+        ></textarea>
+      </div>
+    </div>
+
+    <button class="btn-form" type="submit" [disabled]="infFrm.invalid">Guardar informe y cerrar incidencia</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2 class="card-title">Informes técnicos emitidos ({{ soporteService.informesTecnicos().length }})</h2>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Incidencia</th>
+          <th>Equipo</th>
+          <th>Diagnóstico</th>
+          <th>Solución</th>
+          <th>Piezas cambiadas</th>
+          <th>Lugar</th>
+          <th>Técnico</th>
+          <th>Fecha de cierre</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (inf of soporteService.informesTecnicos(); track inf.idInforme) {
+          <tr>
+            <td class="code">{{ inf.codigoIncidencia }}</td>
+            <td><strong>{{ inf.codigoEquipo }}</strong></td>
+            <td>{{ inf.diagnostico }}</td>
+            <td>{{ inf.solucion }}</td>
+            <td>{{ inf.piezasCambiadas }}</td>
+            <td>{{ inf.lugarAtencion === 'AREA_SOPORTE' ? 'Área de soporte' : 'Oficina del usuario' }}</td>
+            <td>{{ inf.tecnico }}</td>
+            <td class="nowrap">{{ inf.fechaSolucion | date: 'dd/MM/yyyy HH:mm' }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty" colspan="8">Todavía no hay informes técnicos registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

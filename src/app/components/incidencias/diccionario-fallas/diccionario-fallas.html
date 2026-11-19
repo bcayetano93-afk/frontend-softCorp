@@ -1,0 +1,153 @@
+<h1 class="page-title">Diccionario de fallas</h1>
+<p class="page-subtitle">Registra, busca por palabra clave y actualiza soluciones a problemas frecuentes.</p>
+
+<section class="card">
+  <h2 class="card-title">{{ editandoId ? 'Editar solución registrada' : 'Registrar nueva falla frecuente' }}</h2>
+
+  <form #dicFrm="ngForm" (ngSubmit)="guardar()" (keydown.enter)="onEnterKey($event)" autocomplete="off">
+    <div class="form-grid">
+      <div class="field">
+        <label for="titulo">Falla o problema frecuente *</label>
+        <input
+          id="titulo"
+          name="titulo"
+          required
+          minlength="3"
+          maxlength="120"
+          placeholder="Ej. Impresora sin conexión en red"
+          [(ngModel)]="form.titulo"
+          (input)="RG.text($event)"
+        />
+      </div>
+
+      <div class="field">
+        <label for="palabraClave">Palabras clave *</label>
+        <input
+          id="palabraClave"
+          name="palabraClave"
+          required
+          minlength="2"
+          maxlength="100"
+          placeholder="Ej. impresora, red, spooler"
+          [(ngModel)]="form.palabraClave"
+          (input)="RG.text($event)"
+        />
+      </div>
+
+      <div class="field">
+        <label for="sintoma">Síntoma observable *</label>
+        <textarea
+          id="sintoma"
+          name="sintoma"
+          rows="3"
+          required
+          minlength="3"
+          maxlength="300"
+          placeholder="Qué reporta el usuario"
+          [(ngModel)]="form.sintoma"
+          (input)="RG.text($event)"
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label for="solucion">Solución recomendada *</label>
+        <textarea
+          id="solucion"
+          name="solucion"
+          rows="3"
+          required
+          minlength="3"
+          maxlength="300"
+          placeholder="Pasos para resolverlo"
+          [(ngModel)]="form.solucion"
+          (input)="RG.text($event)"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn-form" type="submit" [disabled]="dicFrm.invalid">
+        {{ editandoId ? 'Actualizar solución' : 'Guardar en diccionario' }}
+      </button>
+      @if (editandoId) {
+        <button class="btn-secondary" type="button" (click)="cancelarEdicion()">Cancelar</button>
+      }
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2 class="card-title">Soluciones registradas ({{ fallasFiltradas().length }})</h2>
+
+  <div class="filter-bar">
+    <input
+      type="text"
+      placeholder="Buscar por palabra clave, título o solución..."
+      [(ngModel)]="palabraBusqueda"
+      (input)="RG.text($event)"
+    />
+    <button class="btn-secondary" type="button" (click)="limpiarBusqueda()">Limpiar</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Sel.</th>
+          <th>Falla</th>
+          <th>Palabras clave</th>
+          <th>Síntoma</th>
+          <th>Solución</th>
+          <th>Actualizado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of fallasFiltradas(); track f.idFalla) {
+          <tr>
+            <td>
+              <input
+                type="checkbox"
+                [checked]="selectedRowId === f.idFalla"
+                (change)="onCheckboxChange(f.idFalla, $any($event.target).checked)"
+              />
+            </td>
+            <td><strong>{{ f.titulo }}</strong></td>
+            <td>{{ f.palabraClave }}</td>
+            <td>{{ f.sintoma }}</td>
+            <td>{{ f.solucion }}</td>
+            <td class="nowrap">
+              {{ f.actualizadoPor }}<br />
+              <small>{{ f.fechaActualizacion | date: 'dd/MM/yyyy' }}</small>
+            </td>
+            <td class="nowrap">
+              <button
+                class="btn-action"
+                type="button"
+                [disabled]="selectedRowId !== f.idFalla"
+                [title]="selectedRowId !== f.idFalla ? 'Seleccione la fila para editar' : 'Editar'"
+                (click)="editarFalla(f)"
+              >
+                Editar
+              </button>
+              <button
+                class="btn-action"
+                type="button"
+                style="margin-left: 6px; background: var(--orange-dark)"
+                [disabled]="selectedRowId !== f.idFalla"
+                [title]="selectedRowId !== f.idFalla ? 'Seleccione la fila para eliminar' : 'Eliminar'"
+                (click)="eliminarFalla(f)"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty" colspan="7">No hay coincidencias en el diccionario de fallas.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

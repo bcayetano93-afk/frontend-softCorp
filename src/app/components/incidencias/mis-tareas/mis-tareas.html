@@ -1,0 +1,98 @@
+<h1 class="page-title">Mis tareas asignadas</h1>
+<p class="page-subtitle">Consulta tus incidencias asignadas para atenderlas en el área del usuario o en soporte.</p>
+
+@if (pendientesMiasCount() > 0) {
+  <div class="card alert-banner">
+    🔔 Tienes <strong>{{ pendientesMiasCount() }}</strong> incidencia(s) pendiente(s) asignadas actualmente.
+  </div>
+}
+
+<section class="card">
+  <h2 class="card-title">Bandeja de tareas ({{ tareasFiltradas().length }})</h2>
+
+  <div class="filter-bar">
+    <input
+      type="text"
+      placeholder="Buscar por código, equipo, área o problema..."
+      [(ngModel)]="filtro.texto"
+      (input)="RG.text($event); applyFilter()"
+    />
+    <select [(ngModel)]="filtro.estado" (change)="applyFilter()">
+      <option value="TODOS">Todos los estados</option>
+      <option value="PENDIENTE">Pendiente</option>
+      <option value="SOLUCIONADO">Solucionado</option>
+    </select>
+    <label class="toggle-mine">
+      <input type="checkbox" [(ngModel)]="soloMias" (change)="applyFilter()" />
+      Solo asignadas a mí
+    </label>
+    <button class="btn-secondary" type="button" (click)="clearFilter()">Limpiar</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Equipo</th>
+          <th>Usuario / Área</th>
+          <th>Problema</th>
+          <th>Técnico</th>
+          <th>Traslado / Repuesto</th>
+          <th>Estado</th>
+          <th>Detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (inc of tareasFiltradas(); track inc.idIncidencia) {
+          <tr>
+            <td class="code">{{ inc.codigo }}</td>
+            <td><strong>{{ inc.codigoEquipo }}</strong></td>
+            <td>{{ inc.usuarioResponsable }}<br /><small>{{ inc.area || '-' }}</small></td>
+            <td>{{ inc.problema }}</td>
+            <td>{{ inc.tecnico }}</td>
+            <td>
+              @if (soporteService.tieneRepuestoPendiente(inc.idIncidencia)) {
+                <span class="badge badge-sin-cupo">Espera repuesto</span>
+              } @else if (soporteService.estaTrasladado(inc.idIncidencia)) {
+                <span class="badge badge-pendiente">En área soporte</span>
+              } @else {
+                <span>Oficina usuario</span>
+              }
+            </td>
+            <td>
+              <span class="badge" [class]="'badge badge-' + inc.estado.toLowerCase()">
+                {{ inc.estado === 'PENDIENTE' ? 'Pendiente' : 'Solucionado' }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-action" type="button" (click)="verDetalle(inc)">Ver detalle</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty" colspan="8">No hay tareas asignadas para los filtros actuales.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (detalleSeleccionado(); as d) {
+  <section class="card">
+    <div class="detail-header">
+      <h2 class="card-title">Detalle de {{ d.codigo }}</h2>
+      <button class="btn-secondary" type="button" (click)="detalleSeleccionado.set(null)">Cerrar</button>
+    </div>
+    <div class="form-grid">
+      <div><strong>Equipo:</strong> {{ d.codigoEquipo }}</div>
+      <div><strong>Usuario responsable:</strong> {{ d.usuarioResponsable }}</div>
+      <div><strong>Área:</strong> {{ d.area || 'No especificada' }}</div>
+      <div><strong>Medio de reporte:</strong> {{ d.medioReporte === 'EMAIL' ? 'Email' : 'Teléfono' }}</div>
+      <div><strong>Registrado el:</strong> {{ d.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}</div>
+      <div><strong>Asignado el:</strong> {{ d.fechaAsignacion | date: 'dd/MM/yyyy HH:mm' }}</div>
+      <div class="field-full"><strong>Problema reportado:</strong> {{ d.problema }}</div>
+    </div>
+  </section>
+}
