@@ -11,6 +11,7 @@ import { moduloGuard } from './guards/modulo-guard';
 import { MisTareas } from './components/incidencias/mis-tareas/mis-tareas';
 import { DiccionarioFallas } from './components/incidencias/diccionario-fallas/diccionario-fallas';
 import { SolicitarRepuestoComponent } from './components/incidencias/solicitar-repuesto/solicitar-repuesto';
+import { InformeTecnicoComponent } from './components/incidencias/informe-tecnico/informe-tecnico';
 // Páginas de la aplicación: cada ruta (URL) muestra un componente
 export const routes: Routes = [
   { path: '', component: Home },
@@ -29,6 +30,7 @@ export const routes: Routes = [
       { path: 'mis-tareas', component: MisTareas, canActivate: [moduloGuard] },
       { path: 'diccionario-fallas', component: DiccionarioFallas, canActivate: [moduloGuard] },
       { path: 'solicitar-repuesto', component: SolicitarRepuestoComponent, canActivate: [moduloGuard] },
+      { path: 'informe-tecnico', component: InformeTecnicoComponent, canActivate: [moduloGuard] },
       // Módulos de los siguientes sprints
       { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] },
     ],
