@@ -50,7 +50,6 @@ export class AsignarIncidencia implements OnInit {
   asignar(incidencia: Incidencia): void {
     const idTecnico = this.seleccion[incidencia.idIncidencia];
     if (!idTecnico) {
-      this.toast.show('Elige un técnico para la incidencia.', 'warning');
       return;
     }
 

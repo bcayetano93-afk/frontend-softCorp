@@ -354,3 +354,9 @@ a {
   cursor: not-allowed;
 }
 
+.field input.ng-invalid.ng-touched,
+.field select.ng-invalid.ng-touched,
+.field textarea.ng-invalid.ng-touched {
+  border-color: var(--orange-dark);
+}
+

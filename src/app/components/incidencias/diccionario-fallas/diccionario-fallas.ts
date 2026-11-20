@@ -1,50 +1,74 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { FallaDiccionario } from '../../../model/incidencia';
-import { SessionService } from '../../../services/session';
+import { CategoriaFalla, FallaDiccionario } from '../../../model/incidencia';
 import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
 import { ToastService } from '../../../services/toast';
-import { PATTERNS, RegexConstants, onEnterKey } from '../../../util/constant';
+import { RegexConstants, onEnterKey } from '../../../util/constant';
 
-// HU09 - Diccionario de fallas (alta, búsqueda por palabra clave y edición con checkbox de fila)
+// HU09 - Diccionario de fallas (CRUD conectado al backend)
 @Component({
   selector: 'app-diccionario-fallas',
   imports: [FormsModule, DatePipe],
   templateUrl: './diccionario-fallas.html',
   styleUrl: './diccionario-fallas.scss',
 })
-export class DiccionarioFallas {
-  private sessionService = inject(SessionService);
+export class DiccionarioFallas implements OnInit {
+  private soporteService = inject(SoporteTecnicoService);
   private toast = inject(ToastService);
-  public soporteService = inject(SoporteTecnicoService);
   public RG = RegexConstants;
 
-  private user = this.sessionService.getInfoSession();
+  categorias: CategoriaFalla[] = [
+    'HARDWARE',
+    'SOFTWARE',
+    'RED',
+    'IMPRESORA',
+    'SISTEMA_OPERATIVO',
+    'OTRO',
+  ];
 
+  fallas = signal<FallaDiccionario[]>([]);
   palabraBusqueda = '';
+  categoriaBusqueda = '';
   selectedRowId: number | null = null;
   editandoId: number | null = null;
 
-  form = {
-    titulo: '',
-    palabraClave: '',
-    sintoma: '',
-    solucion: '',
-  };
+  form = this.formVacio();
 
   fallasFiltradas = computed(() => {
     const q = this.palabraBusqueda.trim().toLowerCase();
-    const lista = this.soporteService.diccionarioFallas();
-    if (!q) return lista;
-    return lista.filter(
-      (f) =>
+    const cat = this.categoriaBusqueda;
+    return this.fallas().filter((f) => {
+      if (cat && f.categoria !== cat) return false;
+      if (!q) return true;
+      return (
+        f.codigoFalla.toLowerCase().includes(q) ||
         f.titulo.toLowerCase().includes(q) ||
-        f.palabraClave.toLowerCase().includes(q) ||
-        f.sintoma.toLowerCase().includes(q) ||
-        f.solucion.toLowerCase().includes(q),
-    );
+        f.categoria.toLowerCase().includes(q) ||
+        f.sintomas.toLowerCase().includes(q) ||
+        f.causaProbable.toLowerCase().includes(q) ||
+        f.solucion.toLowerCase().includes(q)
+      );
+    });
   });
+
+  ngOnInit(): void {
+    this.cargarFallas();
+  }
+
+  cargarFallas(): void {
+    this.soporteService.buscarFallas().subscribe({
+      next: (lista) => this.fallas.set(lista),
+      error: (err: HttpErrorResponse) => {
+        this.fallas.set([]);
+        this.toast.show(
+          err.error?.message ?? 'No se pudo cargar el diccionario de fallas.',
+          'danger',
+        );
+      },
+    });
+  }
 
   onEnterKey(event: Event): void {
     onEnterKey(event);
@@ -55,67 +79,90 @@ export class DiccionarioFallas {
   }
 
   guardar(): void {
+    const codigoFalla = this.form.codigoFalla.trim().toUpperCase();
     const titulo = this.form.titulo.trim();
-    const palabraClave = this.form.palabraClave.trim();
-    const sintoma = this.form.sintoma.trim();
+    const categoria = this.form.categoria;
+    const sintomas = this.form.sintomas.trim();
+    const causaProbable = this.form.causaProbable.trim();
     const solucion = this.form.solucion.trim();
 
-    if (!titulo || !palabraClave || !sintoma || !solucion) {
-      this.toast.show('Completa todos los campos del diccionario.', 'warning');
-      return;
-    }
-    if (
-      !PATTERNS.textoGeneral.test(titulo) ||
-      !PATTERNS.textoGeneral.test(sintoma) ||
-      !PATTERNS.textoGeneral.test(solucion)
-    ) {
-      this.toast.show('Verifica que los campos tengan al menos 3 caracteres válidos.', 'warning');
+    if (!codigoFalla || !titulo || !sintomas || !causaProbable || !solucion) {
       return;
     }
 
-    const actualizadoPor = this.user ? `${this.user.nombres} ${this.user.apellidos}` : 'Técnico';
-    this.soporteService.guardarFalla({
-      idFalla: this.editandoId,
-      titulo,
-      palabraClave,
-      sintoma,
-      solucion,
-      actualizadoPor,
+    const payload = { codigoFalla, titulo, categoria, sintomas, causaProbable, solucion };
+    const peticion = this.editandoId
+      ? this.soporteService.actualizarFalla(this.editandoId, payload)
+      : this.soporteService.crearFalla(payload);
+
+    peticion.subscribe({
+      next: () => {
+        this.toast.show(
+          this.editandoId
+            ? 'Solución actualizada en el diccionario.'
+            : 'Falla registrada en el diccionario.',
+          'success',
+        );
+        this.cancelarEdicion();
+        this.cargarFallas();
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status !== 403) {
+          this.toast.show(err.error?.message ?? 'No se pudo guardar la falla.', 'danger');
+        }
+      },
     });
-
-    this.toast.show(
-      this.editandoId ? 'Solución actualizada en el diccionario.' : 'Falla registrada en el diccionario.',
-      'success',
-    );
-    this.cancelarEdicion();
   }
 
   editarFalla(falla: FallaDiccionario): void {
     this.editandoId = falla.idFalla;
     this.form = {
+      codigoFalla: falla.codigoFalla,
       titulo: falla.titulo,
-      palabraClave: falla.palabraClave,
-      sintoma: falla.sintoma,
+      categoria: falla.categoria,
+      sintomas: falla.sintomas,
+      causaProbable: falla.causaProbable,
       solucion: falla.solucion,
     };
   }
 
   eliminarFalla(falla: FallaDiccionario): void {
-    this.soporteService.eliminarFalla(falla.idFalla);
-    if (this.editandoId === falla.idFalla) {
-      this.cancelarEdicion();
-    }
-    this.selectedRowId = null;
-    this.toast.show('Registro eliminado del diccionario.', 'info');
+    this.soporteService.eliminarFalla(falla.idFalla).subscribe({
+      next: () => {
+        if (this.editandoId === falla.idFalla) {
+          this.cancelarEdicion();
+        }
+        this.selectedRowId = null;
+        this.toast.show('Registro eliminado del diccionario.', 'info');
+        this.cargarFallas();
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status !== 403) {
+          this.toast.show(err.error?.message ?? 'No se pudo eliminar el registro.', 'danger');
+        }
+      },
+    });
   }
 
   cancelarEdicion(): void {
     this.editandoId = null;
     this.selectedRowId = null;
-    this.form = { titulo: '', palabraClave: '', sintoma: '', solucion: '' };
+    this.form = this.formVacio();
   }
 
   limpiarBusqueda(): void {
     this.palabraBusqueda = '';
+    this.categoriaBusqueda = '';
+  }
+
+  private formVacio() {
+    return {
+      codigoFalla: '',
+      titulo: '',
+      categoria: 'HARDWARE' as CategoriaFalla,
+      sintomas: '',
+      causaProbable: '',
+      solucion: '',
+    };
   }
 }

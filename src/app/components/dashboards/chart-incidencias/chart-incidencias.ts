@@ -12,10 +12,8 @@ import {
   ApexXAxis,
   NgApexchartsModule,
 } from 'ng-apexcharts';
-import { Incidencia, TecnicoDisponibilidad } from '../../../model/incidencia';
-import { IncidenciaService } from '../../../services/incidencia';
-import { SessionService } from '../../../services/session';
-import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
+import { ChartItem, ChartSerieEstado, DashboardResumen } from '../../../model/dashboard';
+import { DashboardService } from '../../../services/dashboard';
 
 @Component({
   selector: 'app-chart-incidencias',
@@ -24,125 +22,128 @@ import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
   styleUrl: './chart-incidencias.scss',
 })
 export class ChartIncidencias implements OnInit {
-  private incidenciaService = inject(IncidenciaService);
-  private soporteService = inject(SoporteTecnicoService);
-  private sessionService = inject(SessionService);
+  private dashboardService = inject(DashboardService);
 
-  incidencias = signal<Incidencia[]>([]);
-  tecnicos = signal<TecnicoDisponibilidad[]>([]);
+  resumen = signal<DashboardResumen | null>(null);
+  evolucion = signal<ChartSerieEstado[]>([]);
+  porArea = signal<ChartSerieEstado[]>([]);
+  rendimiento = signal<ChartSerieEstado[]>([]);
+  fallasCategoria = signal<ChartItem[]>([]);
+  repuestosEstado = signal<ChartItem[]>([]);
+  errorCarga = signal<string | null>(null);
 
-  // Gráfico 1: DONUT (distinto a pie y bar)
-  donutChart = computed(() => {
-    const lista = this.soporteService.combinarConEstadoLocal(this.incidencias());
-    const sinAsignar = lista.filter((i) => i.estado === 'PENDIENTE' && i.idTecnico === null).length;
-    const esperaRepuesto = lista.filter(
-      (i) => i.estado === 'PENDIENTE' && this.soporteService.tieneRepuestoPendiente(i.idIncidencia),
-    ).length;
-    const enAtencion = lista.filter(
-      (i) => i.estado === 'PENDIENTE' && i.idTecnico !== null && !this.soporteService.tieneRepuestoPendiente(i.idIncidencia),
-    ).length;
-    const solucionadas = lista.filter((i) => i.estado === 'SOLUCIONADO').length;
-
+  // Gráfico 1: Area (evolución diaria)
+  evolucionChart = computed(() => {
+    const data = this.evolucion();
     return {
-      series: [sinAsignar, enAtencion, esperaRepuesto, solucionadas] as ApexNonAxisChartSeries,
-      chart: { type: 'donut', height: 320 } as ApexChart,
-      labels: ['Sin asignar', 'En atención', 'Espera repuesto', 'Solucionadas'],
-      colors: ['#f26b3a', '#f59e0b', '#6366f1', '#12a389'],
-      title: { text: 'Estado Operativo de Incidencias', align: 'center' } as ApexTitleSubtitle,
-      legend: { position: 'bottom' } as ApexLegend,
-    };
-  });
-
-  // Gráfico 2: AREA (distinto a pie y bar)
-  areaChart = computed(() => {
-    const lista = this.soporteService.combinarConEstadoLocal(this.incidencias());
-    const porFecha = new Map<string, { registradas: number; solucionadas: number }>();
-
-    for (const inc of lista) {
-      const fecha = (inc.fechaRegistro || '').slice(0, 10) || 'Hoy';
-      const actual = porFecha.get(fecha) ?? { registradas: 0, solucionadas: 0 };
-      actual.registradas += 1;
-      if (inc.estado === 'SOLUCIONADO') {
-        actual.solucionadas += 1;
-      }
-      porFecha.set(fecha, actual);
-    }
-
-    const categorias = Array.from(porFecha.keys()).sort();
-    return {
+      hasData: data.length > 0,
       series: [
-        { name: 'Registradas', data: categorias.map((f) => porFecha.get(f)!.registradas) },
-        { name: 'Solucionadas', data: categorias.map((f) => porFecha.get(f)!.solucionadas) },
+        { name: 'Registradas', data: data.map((d) => d.pendientes) },
+        { name: 'Solucionadas', data: data.map((d) => d.solucionadas) },
       ] as ApexAxisChartSeries,
-      chart: { type: 'area', height: 320, toolbar: { show: false } } as ApexChart,
-      xaxis: { categories: categorias } as ApexXAxis,
+      chart: { type: 'area', height: 300, toolbar: { show: false } } as ApexChart,
+      xaxis: { categories: data.map((d) => d.categoria) } as ApexXAxis,
       stroke: { curve: 'smooth', width: 2 } as ApexStroke,
       fill: { type: 'gradient', gradient: { opacityFrom: 0.45, opacityTo: 0.05 } } as ApexFill,
       colors: ['#0f2a47', '#12a389'],
       dataLabels: { enabled: false } as ApexDataLabels,
-      title: { text: 'Flujo Diario: Registradas vs. Solucionadas', align: 'center' } as ApexTitleSubtitle,
+      title: { text: 'Evolución Diaria de Incidencias', align: 'center' } as ApexTitleSubtitle,
     };
   });
 
-  // Gráfico 3: RADIALBAR (distinto a pie y bar)
-  radialChart = computed(() => {
-    const listaTecnicos = this.tecnicos();
-    if (listaTecnicos.length > 0) {
-      const porcentajes = listaTecnicos.map((t) =>
-        t.limite > 0 ? Math.min(100, Math.round((t.carga / t.limite) * 100)) : 0,
-      );
-      return {
-        series: porcentajes as ApexNonAxisChartSeries,
-        chart: { type: 'radialBar', height: 320 } as ApexChart,
-        labels: listaTecnicos.map((t) => t.nombre),
-        colors: ['#0f2a47', '#f26b3a', '#12a389', '#6366f1'],
-        plotOptions: {
-          radialBar: {
-            dataLabels: {
-              total: { show: true, label: 'Técnicos', formatter: () => `${listaTecnicos.length}` },
-            },
-          },
-        } as ApexPlotOptions,
-        title: { text: '% Ocupación vs. Límite de Técnicos', align: 'center' } as ApexTitleSubtitle,
-      };
-    }
-
-    // Fallback para roles TECNICO y SISTEMAS (sin acceso a /api/v1/tecnicos/disponibilidad)
-    const lista = this.soporteService.combinarConEstadoLocal(this.incidencias());
-    const total = Math.max(1, lista.length);
-    const conTecnico = Math.round((lista.filter((i) => i.idTecnico !== null).length / total) * 100);
-    const trasladados = Math.round(
-      (lista.filter((i) => this.soporteService.estaTrasladado(i.idIncidencia)).length / total) * 100,
-    );
-    const resueltas = Math.round((lista.filter((i) => i.estado === 'SOLUCIONADO').length / total) * 100);
-
+  // Gráfico 2: Radar (incidencias por área)
+  areaChart = computed(() => {
+    const data = this.porArea();
     return {
-      series: [conTecnico, trasladados, resueltas] as ApexNonAxisChartSeries,
-      chart: { type: 'radialBar', height: 320 } as ApexChart,
-      labels: ['Asignadas (%)', 'En Soporte (%)', 'Resueltas (%)'],
-      colors: ['#0f2a47', '#f26b3a', '#12a389'],
-      plotOptions: {
-        radialBar: {
-          dataLabels: {
-            total: { show: true, label: 'Incidencias', formatter: () => `${lista.length}` },
-          },
-        },
-      } as ApexPlotOptions,
-      title: { text: 'Indicadores de Atención Técnica (%)', align: 'center' } as ApexTitleSubtitle,
+      hasData: data.length > 0,
+      series: [
+        { name: 'Pendientes', data: data.map((d) => d.pendientes) },
+        { name: 'Solucionadas', data: data.map((d) => d.solucionadas) },
+      ] as ApexAxisChartSeries,
+      chart: { type: 'radar', height: 300, toolbar: { show: false } } as ApexChart,
+      xaxis: { categories: data.map((d) => d.categoria) } as ApexXAxis,
+      colors: ['#f26b3a', '#12a389'],
+      stroke: { width: 2 } as ApexStroke,
+      fill: { opacity: 0.25 } as ApexFill,
+      title: { text: 'Incidencias por Área', align: 'center' } as ApexTitleSubtitle,
+    };
+  });
+
+  // Gráfico 3: Bar apilado (rendimiento por técnico)
+  tecnicosChart = computed(() => {
+    const data = this.rendimiento();
+    return {
+      hasData: data.length > 0,
+      series: [
+        { name: 'Pendientes', data: data.map((d) => d.pendientes) },
+        { name: 'Solucionadas', data: data.map((d) => d.solucionadas) },
+      ] as ApexAxisChartSeries,
+      chart: { type: 'bar', height: 300, stacked: true, toolbar: { show: false } } as ApexChart,
+      xaxis: { categories: data.map((d) => d.categoria) } as ApexXAxis,
+      plotOptions: { bar: { horizontal: false, borderRadius: 4 } } as ApexPlotOptions,
+      colors: ['#f59e0b', '#12a389'],
+      dataLabels: { enabled: false } as ApexDataLabels,
+      title: { text: 'Rendimiento por Técnico', align: 'center' } as ApexTitleSubtitle,
+    };
+  });
+
+  // Gráfico 4: Donut (fallas por categoría)
+  fallasChart = computed(() => {
+    const data = this.fallasCategoria();
+    return {
+      hasData: data.length > 0,
+      series: data.map((d) => d.cantidad) as ApexNonAxisChartSeries,
+      chart: { type: 'donut', height: 300 } as ApexChart,
+      labels: data.map((d) => d.etiqueta),
+      colors: ['#0f2a47', '#f26b3a', '#12a389', '#6366f1', '#f59e0b', '#64748b'],
+      legend: { position: 'bottom' } as ApexLegend,
+      title: { text: 'Fallas Documentadas por Categoría', align: 'center' } as ApexTitleSubtitle,
+    };
+  });
+
+  // Gráfico 5: Polar Area (repuestos por estado)
+  repuestosChart = computed(() => {
+    const data = this.repuestosEstado();
+    return {
+      hasData: data.length > 0,
+      series: data.map((d) => d.cantidad) as ApexNonAxisChartSeries,
+      chart: { type: 'polarArea', height: 300 } as ApexChart,
+      labels: data.map((d) => d.etiqueta),
+      colors: ['#f59e0b', '#12a389', '#f26b3a'],
+      legend: { position: 'bottom' } as ApexLegend,
+      title: { text: 'Solicitudes de Repuestos por Estado', align: 'center' } as ApexTitleSubtitle,
     };
   });
 
   ngOnInit(): void {
-    this.incidenciaService.listar().subscribe({
-      next: (data) => this.incidencias.set(data),
-      error: () => {},
-    });
+    const onError = (err: unknown) => {
+      console.error('Error al cargar datos del dashboard', err);
+      this.errorCarga.set('No se pudieron cargar las métricas del dashboard desde el servidor.');
+    };
 
-    if (this.sessionService.getInfoSession()?.rol === 'JEFE') {
-      this.incidenciaService.disponibilidadTecnicos().subscribe({
-        next: (data) => this.tecnicos.set(data),
-        error: () => this.tecnicos.set([]),
-      });
-    }
+    this.dashboardService.resumen().subscribe({
+      next: (data) => this.resumen.set(data),
+      error: onError,
+    });
+    this.dashboardService.evolucionDiaria().subscribe({
+      next: (data) => this.evolucion.set(data),
+      error: onError,
+    });
+    this.dashboardService.incidenciasPorArea().subscribe({
+      next: (data) => this.porArea.set(data),
+      error: onError,
+    });
+    this.dashboardService.rendimientoTecnicos().subscribe({
+      next: (data) => this.rendimiento.set(data),
+      error: onError,
+    });
+    this.dashboardService.fallasPorCategoria().subscribe({
+      next: (data) => this.fallasCategoria.set(data),
+      error: onError,
+    });
+    this.dashboardService.repuestosPorEstado().subscribe({
+      next: (data) => this.repuestosEstado.set(data),
+      error: onError,
+    });
   }
 }

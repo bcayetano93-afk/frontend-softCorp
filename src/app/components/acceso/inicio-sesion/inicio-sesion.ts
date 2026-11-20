@@ -51,16 +51,14 @@ export class InicioSesion {
   }
 
   ingresar(): void {
-    const email = (this.form.value.email ?? '').trim();
-    const password = this.form.value.password ?? '';
-
-    if (!email || !password) {
-      this.toast.show('Ingresa tu correo y contraseña.', 'warning');
-      return;
-    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.toast.show('Verifica el formato del correo y la contraseña.', 'warning');
+      return;
+    }
+
+    const email = (this.form.value.email ?? '').trim();
+    const password = this.form.value.password ?? '';
+    if (!email || !password) {
       return;
     }
 

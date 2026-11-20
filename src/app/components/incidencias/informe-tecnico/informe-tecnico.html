@@ -19,34 +19,34 @@
       </div>
 
       <div class="field">
-        <label for="lugarAtencion">Lugar donde se solucionó *</label>
-        <select id="lugarAtencion" name="lugarAtencion" [(ngModel)]="form.lugarAtencion" required>
+        <label for="lugarSolucion">Lugar donde se solucionó *</label>
+        <select id="lugarSolucion" name="lugarSolucion" [(ngModel)]="form.lugarSolucion" required>
           <option value="OFICINA_USUARIO">En la oficina del usuario</option>
           <option value="AREA_SOPORTE">En el área de soporte</option>
         </select>
       </div>
 
       <div class="field field-full">
-        <label for="piezasCambiadas">Piezas cambiadas</label>
+        <label for="piezasCambiadas">Piezas cambiadas (opcional)</label>
         <input
           id="piezasCambiadas"
           name="piezasCambiadas"
-          maxlength="200"
-          placeholder="Ej. Teclado USB Logitech / Ninguna"
+          maxlength="300"
+          placeholder="Ej. Teclado USB Logitech (dejar vacío si no aplica)"
           [(ngModel)]="form.piezasCambiadas"
           (input)="RG.text($event)"
         />
       </div>
 
       <div class="field">
-        <label for="diagnostico">Diagnóstico técnico *</label>
+        <label for="diagnostico">Diagnóstico técnico (mín. 10 caracteres) *</label>
         <textarea
           id="diagnostico"
           name="diagnostico"
           rows="3"
           required
-          minlength="3"
-          maxlength="300"
+          minlength="10"
+          maxlength="500"
           placeholder="Causa raíz encontrada"
           [(ngModel)]="form.diagnostico"
           (input)="RG.text($event)"
@@ -54,16 +54,16 @@
       </div>
 
       <div class="field">
-        <label for="solucion">Solución aplicada *</label>
+        <label for="solucionAplicada">Solución aplicada (mín. 10 caracteres) *</label>
         <textarea
-          id="solucion"
-          name="solucion"
+          id="solucionAplicada"
+          name="solucionAplicada"
           rows="3"
           required
-          minlength="3"
-          maxlength="300"
+          minlength="10"
+          maxlength="500"
           placeholder="Trabajo realizado para resolver el problema"
-          [(ngModel)]="form.solucion"
+          [(ngModel)]="form.solucionAplicada"
           (input)="RG.text($event)"
         ></textarea>
       </div>
@@ -74,7 +74,7 @@
 </section>
 
 <section class="card">
-  <h2 class="card-title">Informes técnicos emitidos ({{ soporteService.informesTecnicos().length }})</h2>
+  <h2 class="card-title">Informes técnicos emitidos ({{ informes().length }})</h2>
 
   <div class="table-wrapper">
     <table class="data-table">
@@ -83,7 +83,7 @@
           <th>Incidencia</th>
           <th>Equipo</th>
           <th>Diagnóstico</th>
-          <th>Solución</th>
+          <th>Solución aplicada</th>
           <th>Piezas cambiadas</th>
           <th>Lugar</th>
           <th>Técnico</th>
@@ -91,16 +91,16 @@
         </tr>
       </thead>
       <tbody>
-        @for (inf of soporteService.informesTecnicos(); track inf.idInforme) {
+        @for (inf of informes(); track inf.idInforme) {
           <tr>
             <td class="code">{{ inf.codigoIncidencia }}</td>
             <td><strong>{{ inf.codigoEquipo }}</strong></td>
             <td>{{ inf.diagnostico }}</td>
-            <td>{{ inf.solucion }}</td>
-            <td>{{ inf.piezasCambiadas }}</td>
-            <td>{{ inf.lugarAtencion === 'AREA_SOPORTE' ? 'Área de soporte' : 'Oficina del usuario' }}</td>
+            <td>{{ inf.solucionAplicada }}</td>
+            <td>{{ inf.piezasCambiadas || 'Ninguna' }}</td>
+            <td>{{ inf.lugarSolucion === 'AREA_SOPORTE' ? 'Área de soporte' : 'Oficina del usuario' }}</td>
             <td>{{ inf.tecnico }}</td>
-            <td class="nowrap">{{ inf.fechaSolucion | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td class="nowrap">{{ inf.fechaInforme | date: 'dd/MM/yyyy HH:mm' }}</td>
           </tr>
         } @empty {
           <tr>

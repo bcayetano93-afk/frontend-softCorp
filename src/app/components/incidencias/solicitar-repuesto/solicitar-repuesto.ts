@@ -1,12 +1,12 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { EstadoRepuesto, Incidencia, SolicitudRepuesto } from '../../../model/incidencia';
+import { Incidencia, SolicitudRepuesto } from '../../../model/incidencia';
 import { IncidenciaService } from '../../../services/incidencia';
-import { SessionService } from '../../../services/session';
 import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
 import { ToastService } from '../../../services/toast';
-import { PATTERNS, RegexConstants, onEnterKey } from '../../../util/constant';
+import { RegexConstants, onEnterKey } from '../../../util/constant';
 
 // HU07 - Solicitar repuesto a Logística y registrar traslado del equipo
 @Component({
@@ -17,42 +17,55 @@ import { PATTERNS, RegexConstants, onEnterKey } from '../../../util/constant';
 })
 export class SolicitarRepuestoComponent implements OnInit {
   private incidenciaService = inject(IncidenciaService);
-  private sessionService = inject(SessionService);
+  private soporteService = inject(SoporteTecnicoService);
   private toast = inject(ToastService);
-  public soporteService = inject(SoporteTecnicoService);
   public RG = RegexConstants;
 
-  private user = this.sessionService.getInfoSession();
   incidenciasPendientes = signal<Incidencia[]>([]);
+  solicitudes = signal<SolicitudRepuesto[]>([]);
   selectedRowId: number | null = null;
   textoFiltro = '';
 
   solicitudesFiltradas = computed(() => {
     const q = this.textoFiltro.trim().toLowerCase();
-    const lista = this.soporteService.solicitudesRepuesto();
+    const lista = this.solicitudes();
     if (!q) return lista;
     return lista.filter(
       (s) =>
+        s.codigoSolicitud.toLowerCase().includes(q) ||
         s.codigoIncidencia.toLowerCase().includes(q) ||
         s.codigoEquipo.toLowerCase().includes(q) ||
-        s.repuesto.toLowerCase().includes(q),
+        s.codigoRepuesto.toLowerCase().includes(q) ||
+        s.nombreRepuesto.toLowerCase().includes(q),
     );
   });
 
   form = {
     idIncidencia: null as number | null,
-    repuesto: '',
+    codigoRepuesto: '',
+    nombreRepuesto: '',
     cantidad: 1,
-    motivo: '',
-    equipoTrasladado: true,
+    justificacion: '',
+    trasladarEquipo: true,
   };
 
   ngOnInit(): void {
+    this.cargarDatos();
+  }
+
+  cargarDatos(): void {
     this.incidenciaService.listar().subscribe((lista) => {
-      const combinadas = this.soporteService.combinarConEstadoLocal(lista);
       this.incidenciasPendientes.set(
-        combinadas.filter((i) => i.estado === 'PENDIENTE' && i.idTecnico !== null),
+        lista.filter((i) => i.estado === 'PENDIENTE' && i.idTecnico !== null),
       );
+    });
+
+    this.soporteService.listarRepuestos().subscribe({
+      next: (lista) => this.solicitudes.set(lista),
+      error: (err: HttpErrorResponse) => {
+        this.solicitudes.set([]);
+        this.toast.show(err.error?.message ?? 'No se pudieron cargar las solicitudes.', 'danger');
+      },
     });
   }
 
@@ -66,40 +79,64 @@ export class SolicitarRepuestoComponent implements OnInit {
 
   solicitar(): void {
     const inc = this.incidenciasPendientes().find((i) => i.idIncidencia === this.form.idIncidencia);
-    const repuesto = this.form.repuesto.trim();
-    const motivo = this.form.motivo.trim();
+    const codigoRepuesto = this.form.codigoRepuesto.trim().toUpperCase();
+    const nombreRepuesto = this.form.nombreRepuesto.trim();
+    const justificacion = this.form.justificacion.trim();
     const cantidad = Number(this.form.cantidad);
 
-    if (!inc || !repuesto || !motivo || cantidad < 1) {
-      this.toast.show('Completa la incidencia, el repuesto, la cantidad y el motivo.', 'warning');
-      return;
-    }
-    if (!PATTERNS.textoGeneral.test(repuesto) || !PATTERNS.textoGeneral.test(motivo)) {
-      this.toast.show('El nombre del repuesto y motivo deben tener al menos 3 caracteres válidos.', 'warning');
+    if (!inc || !codigoRepuesto || !nombreRepuesto || !justificacion || cantidad < 1) {
       return;
     }
 
-    const tecnico = this.user ? `${this.user.nombres} ${this.user.apellidos}` : 'Técnico';
-    this.soporteService.registrarSolicitudRepuesto({
-      incidencia: inc,
-      repuesto,
-      cantidad,
-      motivo,
-      equipoTrasladado: this.form.equipoTrasladado,
-      tecnicoSolicitante: tecnico,
-    });
-
-    this.toast.show(
-      `Repuesto solicitado para ${inc.codigo}. La incidencia permanece Pendiente.`,
-      'success',
-    );
-    this.form = { idIncidencia: null, repuesto: '', cantidad: 1, motivo: '', equipoTrasladado: true };
+    this.soporteService
+      .solicitarRepuesto({
+        idIncidencia: inc.idIncidencia,
+        codigoRepuesto,
+        nombreRepuesto,
+        cantidad,
+        justificacion,
+        trasladarEquipo: this.form.trasladarEquipo,
+      })
+      .subscribe({
+        next: (creada) => {
+          this.toast.show(
+            `Solicitud ${creada.codigoSolicitud} registrada para ${inc.codigo}.`,
+            'success',
+          );
+          this.form = {
+            idIncidencia: null,
+            codigoRepuesto: '',
+            nombreRepuesto: '',
+            cantidad: 1,
+            justificacion: '',
+            trasladarEquipo: true,
+          };
+          this.cargarDatos();
+        },
+        error: (err: HttpErrorResponse) => {
+          if (err.status !== 403) {
+            this.toast.show(err.error?.message ?? 'No se pudo registrar la solicitud.', 'danger');
+          }
+        },
+      });
   }
 
-  avanzarEstado(solicitud: SolicitudRepuesto, nuevoEstado: EstadoRepuesto): void {
-    this.soporteService.cambiarEstadoRepuesto(solicitud.idSolicitud, nuevoEstado);
-    this.toast.show(`Solicitud de ${solicitud.repuesto} actualizada a ${nuevoEstado}.`, 'info');
-    this.selectedRowId = null;
+  avanzarEstado(solicitud: SolicitudRepuesto, nuevoEstado: 'RECIBIDO' | 'RECHAZADO'): void {
+    this.soporteService.cambiarEstadoRepuesto(solicitud.idSolicitud, nuevoEstado).subscribe({
+      next: () => {
+        this.toast.show(
+          `Solicitud ${solicitud.codigoSolicitud} actualizada a ${nuevoEstado}.`,
+          'info',
+        );
+        this.selectedRowId = null;
+        this.cargarDatos();
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status !== 403) {
+          this.toast.show(err.error?.message ?? 'No se pudo actualizar el estado.', 'danger');
+        }
+      },
+    });
   }
 
   limpiarFiltro(): void {

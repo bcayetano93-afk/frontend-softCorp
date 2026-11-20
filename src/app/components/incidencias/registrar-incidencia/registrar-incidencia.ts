@@ -5,9 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Incidencia, IncidenciaRequest } from '../../../model/incidencia';
 import { IncidenciaService } from '../../../services/incidencia';
 import { SessionService } from '../../../services/session';
-import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
 import { ToastService } from '../../../services/toast';
-import { PATTERNS, RegexConstants, onEnterKey } from '../../../util/constant';
+import { RegexConstants, onEnterKey } from '../../../util/constant';
 
 // HU04 - Registrar incidencia (con regex, validaciones y filtros de tabla)
 @Component({
@@ -18,7 +17,6 @@ import { PATTERNS, RegexConstants, onEnterKey } from '../../../util/constant';
 })
 export class RegistrarIncidencia implements OnInit {
   private incidenciaService = inject(IncidenciaService);
-  private soporteService = inject(SoporteTecnicoService);
   private toast = inject(ToastService);
   private session = inject(SessionService).getInfoSession();
 
@@ -44,7 +42,7 @@ export class RegistrarIncidencia implements OnInit {
 
   cargarIncidencias(): void {
     this.incidenciaService.listar().subscribe((lista) => {
-      this.incidenciasAll.set(this.soporteService.combinarConEstadoLocal(lista));
+      this.incidenciasAll.set(lista);
       this.applyFilter();
     });
   }
@@ -80,19 +78,6 @@ export class RegistrarIncidencia implements OnInit {
     const area = this.form.area.trim();
 
     if (!codigoEquipo || !problema || !usuarioResponsable) {
-      this.toast.show('Completa el código del equipo, el problema y el usuario responsable.', 'warning');
-      return;
-    }
-    if (!PATTERNS.codigoEquipo.test(codigoEquipo)) {
-      this.toast.show('Código de equipo inválido. Usa formato ej. PC-ADM-014.', 'warning');
-      return;
-    }
-    if (!PATTERNS.soloLetras.test(usuarioResponsable)) {
-      this.toast.show('El usuario responsable solo debe contener letras.', 'warning');
-      return;
-    }
-    if (!PATTERNS.textoGeneral.test(problema)) {
-      this.toast.show('Describe el problema con al menos 3 caracteres válidos.', 'warning');
       return;
     }
 

@@ -1,36 +1,113 @@
+@if (errorCarga()) {
+  <div class="card error-banner">{{ errorCarga() }}</div>
+}
+
+@if (resumen(); as r) {
+  <section class="kpi-grid">
+    <div class="card kpi-card">
+      <span class="kpi-label">Total incidencias</span>
+      <strong class="kpi-value">{{ r.totalIncidencias }}</strong>
+    </div>
+    <div class="card kpi-card">
+      <span class="kpi-label">Pendientes</span>
+      <strong class="kpi-value kpi-warn">{{ r.incidenciasPendientes }}</strong>
+    </div>
+    <div class="card kpi-card">
+      <span class="kpi-label">Solucionadas</span>
+      <strong class="kpi-value kpi-ok">{{ r.incidenciasSolucionadas }}</strong>
+    </div>
+    <div class="card kpi-card">
+      <span class="kpi-label">Equipos en soporte</span>
+      <strong class="kpi-value">{{ r.equiposEnSoporte }}</strong>
+    </div>
+    <div class="card kpi-card">
+      <span class="kpi-label">Repuestos pendientes</span>
+      <strong class="kpi-value kpi-accent">{{ r.repuestosPendientes }}</strong>
+    </div>
+    <div class="card kpi-card">
+      <span class="kpi-label">Fallas documentadas</span>
+      <strong class="kpi-value">{{ r.fallasDocumentadas }}</strong>
+    </div>
+  </section>
+}
+
 <section class="charts-grid">
   <div class="card chart-card">
-    <apx-chart
-      [series]="donutChart().series"
-      [chart]="donutChart().chart"
-      [labels]="donutChart().labels"
-      [colors]="donutChart().colors"
-      [title]="donutChart().title"
-      [legend]="donutChart().legend"
-    ></apx-chart>
+    @if (evolucionChart().hasData) {
+      <apx-chart
+        [series]="evolucionChart().series"
+        [chart]="evolucionChart().chart"
+        [xaxis]="evolucionChart().xaxis"
+        [stroke]="evolucionChart().stroke"
+        [fill]="evolucionChart().fill"
+        [colors]="evolucionChart().colors"
+        [dataLabels]="evolucionChart().dataLabels"
+        [title]="evolucionChart().title"
+      ></apx-chart>
+    } @else {
+      <p class="empty">Sin datos de evolución diaria.</p>
+    }
   </div>
 
   <div class="card chart-card">
-    <apx-chart
-      [series]="areaChart().series"
-      [chart]="areaChart().chart"
-      [xaxis]="areaChart().xaxis"
-      [stroke]="areaChart().stroke"
-      [fill]="areaChart().fill"
-      [colors]="areaChart().colors"
-      [dataLabels]="areaChart().dataLabels"
-      [title]="areaChart().title"
-    ></apx-chart>
+    @if (areaChart().hasData) {
+      <apx-chart
+        [series]="areaChart().series"
+        [chart]="areaChart().chart"
+        [xaxis]="areaChart().xaxis"
+        [colors]="areaChart().colors"
+        [stroke]="areaChart().stroke"
+        [fill]="areaChart().fill"
+        [title]="areaChart().title"
+      ></apx-chart>
+    } @else {
+      <p class="empty">Sin datos de incidencias por área.</p>
+    }
   </div>
 
   <div class="card chart-card">
-    <apx-chart
-      [series]="radialChart().series"
-      [chart]="radialChart().chart"
-      [labels]="radialChart().labels"
-      [colors]="radialChart().colors"
-      [plotOptions]="radialChart().plotOptions"
-      [title]="radialChart().title"
-    ></apx-chart>
+    @if (tecnicosChart().hasData) {
+      <apx-chart
+        [series]="tecnicosChart().series"
+        [chart]="tecnicosChart().chart"
+        [xaxis]="tecnicosChart().xaxis"
+        [plotOptions]="tecnicosChart().plotOptions"
+        [colors]="tecnicosChart().colors"
+        [dataLabels]="tecnicosChart().dataLabels"
+        [title]="tecnicosChart().title"
+      ></apx-chart>
+    } @else {
+      <p class="empty">Sin datos de rendimiento de técnicos.</p>
+    }
+  </div>
+
+  <div class="card chart-card">
+    @if (fallasChart().hasData) {
+      <apx-chart
+        [series]="fallasChart().series"
+        [chart]="fallasChart().chart"
+        [labels]="fallasChart().labels"
+        [colors]="fallasChart().colors"
+        [legend]="fallasChart().legend"
+        [title]="fallasChart().title"
+      ></apx-chart>
+    } @else {
+      <p class="empty">Sin fallas registradas en el diccionario.</p>
+    }
+  </div>
+
+  <div class="card chart-card">
+    @if (repuestosChart().hasData) {
+      <apx-chart
+        [series]="repuestosChart().series"
+        [chart]="repuestosChart().chart"
+        [labels]="repuestosChart().labels"
+        [colors]="repuestosChart().colors"
+        [legend]="repuestosChart().legend"
+        [title]="repuestosChart().title"
+      ></apx-chart>
+    } @else {
+      <p class="empty">Sin solicitudes de repuestos registradas.</p>
+    }
   </div>
 </section>

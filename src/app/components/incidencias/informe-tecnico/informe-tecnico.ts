@@ -1,12 +1,12 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Incidencia, LugarAtencion } from '../../../model/incidencia';
+import { Incidencia, InformeTecnico, LugarAtencion } from '../../../model/incidencia';
 import { IncidenciaService } from '../../../services/incidencia';
-import { SessionService } from '../../../services/session';
 import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
 import { ToastService } from '../../../services/toast';
-import { PATTERNS, RegexConstants, onEnterKey } from '../../../util/constant';
+import { RegexConstants, onEnterKey } from '../../../util/constant';
 
 // HU08 - Registrar informe técnico y cerrar incidencia como SOLUCIONADO
 @Component({
@@ -17,76 +17,80 @@ import { PATTERNS, RegexConstants, onEnterKey } from '../../../util/constant';
 })
 export class InformeTecnicoComponent implements OnInit {
   private incidenciaService = inject(IncidenciaService);
-  private sessionService = inject(SessionService);
+  private soporteService = inject(SoporteTecnicoService);
   private toast = inject(ToastService);
-  public soporteService = inject(SoporteTecnicoService);
   public RG = RegexConstants;
 
-  private user = this.sessionService.getInfoSession();
   incidenciasPendientes = signal<Incidencia[]>([]);
+  informes = signal<InformeTecnico[]>([]);
 
   form = {
     idIncidencia: null as number | null,
     diagnostico: '',
-    solucion: '',
+    solucionAplicada: '',
     piezasCambiadas: '',
-    lugarAtencion: 'OFICINA_USUARIO' as LugarAtencion,
+    lugarSolucion: 'OFICINA_USUARIO' as LugarAtencion,
   };
 
   ngOnInit(): void {
-    this.cargarPendientes();
+    this.cargarDatos();
   }
 
   onEnterKey(event: Event): void {
     onEnterKey(event);
   }
 
-  cargarPendientes(): void {
+  cargarDatos(): void {
     this.incidenciaService.listar().subscribe((lista) => {
-      const combinadas = this.soporteService.combinarConEstadoLocal(lista);
       this.incidenciasPendientes.set(
-        combinadas.filter((i) => i.estado === 'PENDIENTE' && i.idTecnico !== null),
+        lista.filter((i) => i.estado === 'PENDIENTE' && i.idTecnico !== null),
       );
+    });
+
+    this.soporteService.listarInformes().subscribe({
+      next: (lista) => this.informes.set(lista),
+      error: (err: HttpErrorResponse) => {
+        this.informes.set([]);
+        this.toast.show(err.error?.message ?? 'No se pudieron cargar los informes técnicos.', 'danger');
+      },
     });
   }
 
   registrarInforme(): void {
     const inc = this.incidenciasPendientes().find((i) => i.idIncidencia === this.form.idIncidencia);
     const diagnostico = this.form.diagnostico.trim();
-    const solucion = this.form.solucion.trim();
-    const piezasCambiadas = this.form.piezasCambiadas.trim() || 'Ninguna';
+    const solucionAplicada = this.form.solucionAplicada.trim();
+    const piezasCambiadas = this.form.piezasCambiadas.trim();
 
-    if (!inc || !diagnostico || !solucion) {
-      this.toast.show('Selecciona una incidencia e ingresa el diagnóstico y la solución.', 'warning');
-      return;
-    }
-    if (this.soporteService.tieneRepuestoPendiente(inc.idIncidencia)) {
-      this.toast.show('Esta incidencia tiene un repuesto pendiente por recibir en Logística.', 'warning');
-      return;
-    }
-    if (!PATTERNS.textoGeneral.test(diagnostico) || !PATTERNS.textoGeneral.test(solucion)) {
-      this.toast.show('Diagnóstico y solución requieren al menos 3 caracteres válidos.', 'warning');
+    if (!inc || !diagnostico || !solucionAplicada) {
       return;
     }
 
-    const tecnico = this.user ? `${this.user.nombres} ${this.user.apellidos}` : 'Técnico';
-    this.soporteService.registrarInformeTecnico({
-      incidencia: inc,
-      diagnostico,
-      solucion,
-      piezasCambiadas,
-      lugarAtencion: this.form.lugarAtencion,
-      tecnico,
-    });
-
-    this.toast.show(`Informe registrado. ${inc.codigo} pasó a estado Solucionado.`, 'success');
-    this.form = {
-      idIncidencia: null,
-      diagnostico: '',
-      solucion: '',
-      piezasCambiadas: '',
-      lugarAtencion: 'OFICINA_USUARIO',
-    };
-    this.cargarPendientes();
+    this.soporteService
+      .registrarInformeTecnico({
+        idIncidencia: inc.idIncidencia,
+        diagnostico,
+        solucionAplicada,
+        piezasCambiadas,
+        lugarSolucion: this.form.lugarSolucion,
+      })
+      .subscribe({
+        next: () => {
+          this.toast.show(`Informe registrado. ${inc.codigo} pasó a estado Solucionado.`, 'success');
+          this.form = {
+            idIncidencia: null,
+            diagnostico: '',
+            solucionAplicada: '',
+            piezasCambiadas: '',
+            lugarSolucion: 'OFICINA_USUARIO',
+          };
+          this.cargarDatos();
+        },
+        error: (err: HttpErrorResponse) => {
+          if (err.status !== 403) {
+            this.toast.show(err.error?.message ?? 'No se pudo registrar el informe técnico.', 'danger');
+          }
+        },
+      });
   }
 }

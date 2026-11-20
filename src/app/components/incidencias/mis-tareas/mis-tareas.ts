@@ -17,11 +17,12 @@ import { RegexConstants } from '../../../util/constant';
 export class MisTareas implements OnInit {
   private incidenciaService = inject(IncidenciaService);
   private sessionService = inject(SessionService);
-  public soporteService = inject(SoporteTecnicoService);
+  private soporteService = inject(SoporteTecnicoService);
   public RG = RegexConstants;
 
   private user = this.sessionService.getInfoSession();
   private todas = signal<Incidencia[]>([]);
+  private incidenciasConRepuestoPendiente = signal<Set<number>>(new Set());
 
   tareasFiltradas = signal<Incidencia[]>([]);
   detalleSeleccionado = signal<Incidencia | null>(null);
@@ -45,9 +46,24 @@ export class MisTareas implements OnInit {
 
   cargar(): void {
     this.incidenciaService.listar().subscribe((lista) => {
-      this.todas.set(this.soporteService.combinarConEstadoLocal(lista));
+      this.todas.set(lista);
       this.applyFilter();
     });
+
+    this.soporteService.listarRepuestos('SOLICITADO').subscribe({
+      next: (solicitudes) => {
+        this.incidenciasConRepuestoPendiente.set(new Set(solicitudes.map((s) => s.idIncidencia)));
+      },
+      error: () => this.incidenciasConRepuestoPendiente.set(new Set()),
+    });
+  }
+
+  tieneRepuestoPendiente(idIncidencia: number): boolean {
+    return this.incidenciasConRepuestoPendiente().has(idIncidencia);
+  }
+
+  estaEnSoporte(incidencia: Incidencia): boolean {
+    return incidencia.ubicacionEquipo === 'AREA_SOPORTE';
   }
 
   esMiIncidencia(incidencia: Incidencia): boolean {

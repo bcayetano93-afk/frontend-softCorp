@@ -62,7 +62,14 @@
               </select>
             </td>
             <td>
-              <button class="btn-form" type="button" (click)="asignar(incidencia)">Asignar</button>
+              <button
+                class="btn-form"
+                type="button"
+                [disabled]="!seleccion[incidencia.idIncidencia]"
+                (click)="asignar(incidencia)"
+              >
+                Asignar
+              </button>
             </td>
           </tr>
         } @empty {

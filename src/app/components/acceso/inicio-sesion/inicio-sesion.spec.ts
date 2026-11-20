@@ -24,11 +24,11 @@ describe('InicioSesion', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show a toast when the fields are empty', () => {
+  it('should not show a toast when submitting empty fields', () => {
     component.ingresar();
     const toasts = TestBed.inject(ToastService).toasts();
-    expect(toasts[0].message).toBe('Ingresa tu correo y contraseña.');
-    expect(toasts[0].type).toBe('warning');
+    expect(component.form.invalid).toBe(true);
+    expect(toasts.length).toBe(0);
   });
 
   it('should disable submit when email is invalid', () => {

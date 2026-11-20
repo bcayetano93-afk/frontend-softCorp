@@ -21,51 +21,66 @@
       </div>
 
       <div class="field">
-        <label for="repuesto">Repuesto solicitado *</label>
+        <label for="codigoRepuesto">Código del repuesto *</label>
         <input
-          id="repuesto"
-          name="repuesto"
+          id="codigoRepuesto"
+          name="codigoRepuesto"
+          required
+          maxlength="16"
+          pattern="^[rR][eE][pP]-[a-zA-Z0-9]{2,6}-\d{3,4}$"
+          placeholder="Ej. REP-SSD-001"
+          [(ngModel)]="form.codigoRepuesto"
+          (input)="RG.codigoEquipo($event)"
+        />
+      </div>
+
+      <div class="field">
+        <label for="nombreRepuesto">Nombre del repuesto *</label>
+        <input
+          id="nombreRepuesto"
+          name="nombreRepuesto"
           required
           minlength="3"
-          maxlength="120"
+          maxlength="150"
           placeholder="Ej. Disco SSD 512GB NVMe"
-          [(ngModel)]="form.repuesto"
+          [(ngModel)]="form.nombreRepuesto"
           (input)="RG.text($event)"
         />
       </div>
 
       <div class="field">
-        <label for="cantidad">Cantidad *</label>
+        <label for="cantidad">Cantidad (1 - 20) *</label>
         <input
           id="cantidad"
           name="cantidad"
           type="text"
           required
           maxlength="2"
+          pattern="^([1-9]|1[0-9]|20)$"
           [(ngModel)]="form.cantidad"
           (input)="RG.number($event)"
         />
       </div>
 
-      <div class="field">
+      <div class="field field-full">
         <label>Traslado del equipo</label>
         <label class="check-inline">
-          <input type="checkbox" name="equipoTrasladado" [(ngModel)]="form.equipoTrasladado" />
+          <input type="checkbox" name="trasladarEquipo" [(ngModel)]="form.trasladarEquipo" />
           El equipo fue trasladado al área de soporte
         </label>
       </div>
 
       <div class="field field-full">
-        <label for="motivo">Motivo / diagnóstico preliminar *</label>
+        <label for="justificacion">Justificación / diagnóstico preliminar (mín. 10 caracteres) *</label>
         <textarea
-          id="motivo"
-          name="motivo"
+          id="justificacion"
+          name="justificacion"
           rows="2"
           required
-          minlength="3"
+          minlength="10"
           maxlength="300"
           placeholder="Justifica el requerimiento del repuesto"
-          [(ngModel)]="form.motivo"
+          [(ngModel)]="form.justificacion"
           (input)="RG.text($event)"
         ></textarea>
       </div>
@@ -81,7 +96,7 @@
   <div class="filter-bar">
     <input
       type="text"
-      placeholder="Buscar por código de incidencia, equipo o repuesto..."
+      placeholder="Buscar por código de solicitud, incidencia, equipo o repuesto..."
       [(ngModel)]="textoFiltro"
       (input)="RG.text($event)"
     />
@@ -93,6 +108,7 @@
       <thead>
         <tr>
           <th>Sel.</th>
+          <th>Solicitud</th>
           <th>Incidencia</th>
           <th>Equipo</th>
           <th>Repuesto (Cant.)</th>
@@ -112,42 +128,50 @@
                 (change)="onCheckboxChange(s.idSolicitud, $any($event.target).checked)"
               />
             </td>
+            <td class="code">{{ s.codigoSolicitud }}</td>
             <td class="code">{{ s.codigoIncidencia }}</td>
             <td><strong>{{ s.codigoEquipo }}</strong></td>
-            <td>{{ s.repuesto }} ({{ s.cantidad }})</td>
-            <td>{{ s.equipoTrasladado ? 'Sí (En soporte)' : 'No' }}</td>
+            <td>{{ s.codigoRepuesto }} — {{ s.nombreRepuesto }} ({{ s.cantidad }})</td>
+            <td>{{ s.trasladarEquipo ? 'Sí (En soporte)' : 'No' }}</td>
             <td class="nowrap">{{ s.fechaSolicitud | date: 'dd/MM/yyyy HH:mm' }}</td>
             <td>
               <span
                 class="badge"
-                [class]="s.estado === 'RECIBIDO' ? 'badge badge-solucionado' : 'badge badge-pendiente'"
+                [class]="
+                  s.estado === 'RECIBIDO'
+                    ? 'badge badge-solucionado'
+                    : s.estado === 'RECHAZADO'
+                      ? 'badge badge-sin-cupo'
+                      : 'badge badge-pendiente'
+                "
               >
                 {{ s.estado }}
               </span>
             </td>
-            <td>
+            <td class="nowrap">
               <button
                 class="btn-action"
                 type="button"
+                style="background: var(--teal)"
                 [disabled]="selectedRowId !== s.idSolicitud || s.estado !== 'SOLICITADO'"
-                (click)="avanzarEstado(s, 'EN_ESPERA')"
+                (click)="avanzarEstado(s, 'RECIBIDO')"
               >
-                En espera
+                Recibido
               </button>
               <button
                 class="btn-action"
                 type="button"
-                style="margin-left: 6px; background: var(--teal)"
-                [disabled]="selectedRowId !== s.idSolicitud || s.estado === 'RECIBIDO'"
-                (click)="avanzarEstado(s, 'RECIBIDO')"
+                style="margin-left: 6px; background: var(--orange-dark)"
+                [disabled]="selectedRowId !== s.idSolicitud || s.estado !== 'SOLICITADO'"
+                (click)="avanzarEstado(s, 'RECHAZADO')"
               >
-                Recibido
+                Rechazado
               </button>
             </td>
           </tr>
         } @empty {
           <tr>
-            <td class="empty" colspan="8">No hay solicitudes de repuestos registradas.</td>
+            <td class="empty" colspan="9">No hay solicitudes de repuestos registradas.</td>
           </tr>
         }
       </tbody>

@@ -52,9 +52,9 @@
             <td>{{ inc.problema }}</td>
             <td>{{ inc.tecnico }}</td>
             <td>
-              @if (soporteService.tieneRepuestoPendiente(inc.idIncidencia)) {
+              @if (tieneRepuestoPendiente(inc.idIncidencia)) {
                 <span class="badge badge-sin-cupo">Espera repuesto</span>
-              } @else if (soporteService.estaTrasladado(inc.idIncidencia)) {
+              } @else if (estaEnSoporte(inc)) {
                 <span class="badge badge-pendiente">En área soporte</span>
               } @else {
                 <span>Oficina usuario</span>

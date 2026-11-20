@@ -1,5 +1,5 @@
 <h1 class="page-title">Diccionario de fallas</h1>
-<p class="page-subtitle">Registra, busca por palabra clave y actualiza soluciones a problemas frecuentes.</p>
+<p class="page-subtitle">Registra, busca y actualiza soluciones a problemas frecuentes.</p>
 
 <section class="card">
   <h2 class="card-title">{{ editandoId ? 'Editar solución registrada' : 'Registrar nueva falla frecuente' }}</h2>
@@ -7,13 +7,36 @@
   <form #dicFrm="ngForm" (ngSubmit)="guardar()" (keydown.enter)="onEnterKey($event)" autocomplete="off">
     <div class="form-grid">
       <div class="field">
-        <label for="titulo">Falla o problema frecuente *</label>
+        <label for="codigoFalla">Código de falla *</label>
+        <input
+          id="codigoFalla"
+          name="codigoFalla"
+          required
+          maxlength="16"
+          pattern="^[fF][aA][lL]-[a-zA-Z]{2,5}-\d{3}$"
+          placeholder="Ej. FAL-RED-002"
+          [(ngModel)]="form.codigoFalla"
+          (input)="RG.codigoEquipo($event)"
+        />
+      </div>
+
+      <div class="field">
+        <label for="categoria">Categoría *</label>
+        <select id="categoria" name="categoria" [(ngModel)]="form.categoria" required>
+          @for (cat of categorias; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field field-full">
+        <label for="titulo">Falla o problema frecuente (mín. 5 caracteres) *</label>
         <input
           id="titulo"
           name="titulo"
           required
-          minlength="3"
-          maxlength="120"
+          minlength="5"
+          maxlength="150"
           placeholder="Ej. Impresora sin conexión en red"
           [(ngModel)]="form.titulo"
           (input)="RG.text($event)"
@@ -21,43 +44,44 @@
       </div>
 
       <div class="field">
-        <label for="palabraClave">Palabras clave *</label>
-        <input
-          id="palabraClave"
-          name="palabraClave"
-          required
-          minlength="2"
-          maxlength="100"
-          placeholder="Ej. impresora, red, spooler"
-          [(ngModel)]="form.palabraClave"
-          (input)="RG.text($event)"
-        />
-      </div>
-
-      <div class="field">
-        <label for="sintoma">Síntoma observable *</label>
+        <label for="sintomas">Síntomas observables (mín. 10 caracteres) *</label>
         <textarea
-          id="sintoma"
-          name="sintoma"
+          id="sintomas"
+          name="sintomas"
           rows="3"
           required
-          minlength="3"
-          maxlength="300"
+          minlength="10"
+          maxlength="500"
           placeholder="Qué reporta el usuario"
-          [(ngModel)]="form.sintoma"
+          [(ngModel)]="form.sintomas"
           (input)="RG.text($event)"
         ></textarea>
       </div>
 
       <div class="field">
-        <label for="solucion">Solución recomendada *</label>
+        <label for="causaProbable">Causa probable (mín. 10 caracteres) *</label>
+        <textarea
+          id="causaProbable"
+          name="causaProbable"
+          rows="3"
+          required
+          minlength="10"
+          maxlength="400"
+          placeholder="Origen técnico del problema"
+          [(ngModel)]="form.causaProbable"
+          (input)="RG.text($event)"
+        ></textarea>
+      </div>
+
+      <div class="field field-full">
+        <label for="solucion">Solución recomendada (mín. 10 caracteres) *</label>
         <textarea
           id="solucion"
           name="solucion"
           rows="3"
           required
-          minlength="3"
-          maxlength="300"
+          minlength="10"
+          maxlength="800"
           placeholder="Pasos para resolverlo"
           [(ngModel)]="form.solucion"
           (input)="RG.text($event)"
@@ -82,10 +106,16 @@
   <div class="filter-bar">
     <input
       type="text"
-      placeholder="Buscar por palabra clave, título o solución..."
+      placeholder="Buscar por código, título, síntomas, causa o solución..."
       [(ngModel)]="palabraBusqueda"
       (input)="RG.text($event)"
     />
+    <select [(ngModel)]="categoriaBusqueda">
+      <option value="">Todas las categorías</option>
+      @for (cat of categorias; track cat) {
+        <option [value]="cat">{{ cat }}</option>
+      }
+    </select>
     <button class="btn-secondary" type="button" (click)="limpiarBusqueda()">Limpiar</button>
   </div>
 
@@ -94,11 +124,12 @@
       <thead>
         <tr>
           <th>Sel.</th>
-          <th>Falla</th>
-          <th>Palabras clave</th>
-          <th>Síntoma</th>
+          <th>Código</th>
+          <th>Categoría</th>
+          <th>Falla / Causa</th>
+          <th>Síntomas</th>
           <th>Solución</th>
-          <th>Actualizado</th>
+          <th>Autor</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -112,13 +143,17 @@
                 (change)="onCheckboxChange(f.idFalla, $any($event.target).checked)"
               />
             </td>
-            <td><strong>{{ f.titulo }}</strong></td>
-            <td>{{ f.palabraClave }}</td>
-            <td>{{ f.sintoma }}</td>
+            <td class="code">{{ f.codigoFalla }}</td>
+            <td><span class="badge badge-pendiente">{{ f.categoria }}</span></td>
+            <td>
+              <strong>{{ f.titulo }}</strong><br />
+              <small>{{ f.causaProbable }}</small>
+            </td>
+            <td>{{ f.sintomas }}</td>
             <td>{{ f.solucion }}</td>
             <td class="nowrap">
-              {{ f.actualizadoPor }}<br />
-              <small>{{ f.fechaActualizacion | date: 'dd/MM/yyyy' }}</small>
+              {{ f.autor }}<br />
+              <small>{{ (f.updatedAt || f.createdAt) | date: 'dd/MM/yyyy' }}</small>
             </td>
             <td class="nowrap">
               <button
@@ -144,7 +179,7 @@
           </tr>
         } @empty {
           <tr>
-            <td class="empty" colspan="7">No hay coincidencias en el diccionario de fallas.</td>
+            <td class="empty" colspan="8">No hay coincidencias en el diccionario de fallas.</td>
           </tr>
         }
       </tbody>

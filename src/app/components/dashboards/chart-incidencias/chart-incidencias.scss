@@ -1,6 +1,52 @@
+.error-banner {
+  color: var(--orange-dark);
+  background: #fdeae2;
+  border-color: #f8c4b0;
+  font-weight: 600;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.kpi-card {
+  margin-bottom: 0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kpi-value {
+  color: var(--navy);
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.kpi-ok {
+  color: var(--teal);
+}
+
+.kpi-warn {
+  color: #b7791f;
+}
+
+.kpi-accent {
+  color: var(--orange-dark);
+}
+
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
   margin-bottom: 24px;
 }
@@ -8,10 +54,4 @@
 .chart-card {
   margin-bottom: 0;
   padding: 18px;
-}
-
-@media (max-width: 1150px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
 }
