@@ -12,7 +12,12 @@ import {
   ApexXAxis,
   NgApexchartsModule,
 } from 'ng-apexcharts';
-import { ChartItem, ChartSerieEstado, DashboardResumen } from '../../../model/dashboard';
+import {
+  ChartItem,
+  ChartSerieEstado,
+  DashboardResumen,
+  RendimientoTecnico,
+} from '../../../model/dashboard';
 import { DashboardService } from '../../../services/dashboard';
 
 @Component({
@@ -27,7 +32,7 @@ export class ChartIncidencias implements OnInit {
   resumen = signal<DashboardResumen | null>(null);
   evolucion = signal<ChartSerieEstado[]>([]);
   porArea = signal<ChartSerieEstado[]>([]);
-  rendimiento = signal<ChartSerieEstado[]>([]);
+  rendimiento = signal<RendimientoTecnico[]>([]);
   fallasCategoria = signal<ChartItem[]>([]);
   repuestosEstado = signal<ChartItem[]>([]);
   errorCarga = signal<string | null>(null);
@@ -69,20 +74,36 @@ export class ChartIncidencias implements OnInit {
     };
   });
 
-  // Gráfico 3: Bar apilado (rendimiento por técnico)
+  // Gráfico 3: Heatmap (rendimiento por técnico)
   tecnicosChart = computed(() => {
     const data = this.rendimiento();
     return {
       hasData: data.length > 0,
       series: [
-        { name: 'Pendientes', data: data.map((d) => d.pendientes) },
-        { name: 'Solucionadas', data: data.map((d) => d.solucionadas) },
+        {
+          name: 'Pendientes',
+          data: data.map((d) => ({ x: d.tecnico, y: d.pendientes })),
+        },
+        {
+          name: 'Solucionadas',
+          data: data.map((d) => ({ x: d.tecnico, y: d.solucionadas })),
+        },
+        {
+          name: 'Límite atención',
+          data: data.map((d) => ({ x: d.tecnico, y: d.limiteAtencion })),
+        },
       ] as ApexAxisChartSeries,
-      chart: { type: 'bar', height: 300, stacked: true, toolbar: { show: false } } as ApexChart,
-      xaxis: { categories: data.map((d) => d.categoria) } as ApexXAxis,
-      plotOptions: { bar: { horizontal: false, borderRadius: 4 } } as ApexPlotOptions,
-      colors: ['#f59e0b', '#12a389'],
-      dataLabels: { enabled: false } as ApexDataLabels,
+      chart: { type: 'heatmap', height: 300, toolbar: { show: false } } as ApexChart,
+      xaxis: { type: 'category' } as ApexXAxis,
+      plotOptions: {
+        heatmap: {
+          radius: 6,
+          enableShades: true,
+          shadeIntensity: 0.55,
+        },
+      } as ApexPlotOptions,
+      colors: ['#f59e0b', '#12a389', '#0f2a47'],
+      dataLabels: { enabled: true } as ApexDataLabels,
       title: { text: 'Rendimiento por Técnico', align: 'center' } as ApexTitleSubtitle,
     };
   });

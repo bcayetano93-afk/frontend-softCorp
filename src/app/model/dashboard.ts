@@ -17,3 +17,11 @@ export interface ChartSerieEstado {
   pendientes: number;
   solucionadas: number;
 }
+
+export interface RendimientoTecnico {
+  tecnico: string;
+  pendientes: number;
+  solucionadas: number;
+  limiteAtencion: number;
+  totalAsignadas: number;
+}

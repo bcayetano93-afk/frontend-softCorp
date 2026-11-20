@@ -2,7 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-import { ChartItem, ChartSerieEstado, DashboardResumen } from '../model/dashboard';
+import {
+  ChartItem,
+  ChartSerieEstado,
+  DashboardResumen,
+  RendimientoTecnico,
+} from '../model/dashboard';
 
 // Consultas agregadas para el dashboard y los 5 gráficos del backend.
 @Injectable({ providedIn: 'root' })
@@ -22,8 +27,8 @@ export class DashboardService {
     return this.http.get<ChartSerieEstado[]>(`${this.url}/incidencias-por-area`);
   }
 
-  rendimientoTecnicos(): Observable<ChartSerieEstado[]> {
-    return this.http.get<ChartSerieEstado[]>(`${this.url}/rendimiento-tecnicos`);
+  rendimientoTecnicos(): Observable<RendimientoTecnico[]> {
+    return this.http.get<RendimientoTecnico[]>(`${this.url}/rendimiento-tecnicos`);
   }
 
   fallasPorCategoria(): Observable<ChartItem[]> {
