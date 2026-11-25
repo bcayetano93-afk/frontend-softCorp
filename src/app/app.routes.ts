@@ -36,10 +36,8 @@ export const routes: Routes = [
       { path: 'gestion-roles', component: RegistrarRol, canActivate: [moduloGuard] },
       // Sprint 4
       { path: 'reportes', component: Reportes, canActivate: [moduloGuard] },
-      { path: 'reportes', component: Reportes, canActivate: [moduloGuard] },
       { path: 'historial-equipos', component: HistorialEquipos, canActivate: [moduloGuard] },
-      { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] },
-      { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] },
+      { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] }
     ],
   },
   { path: '**', redirectTo: '' },
