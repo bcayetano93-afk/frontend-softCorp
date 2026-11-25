@@ -13,7 +13,7 @@ import { Principal } from './components/principal/principal';
 import { Proximamente } from './components/principal/proximamente/proximamente';
 import { authGuard } from './guards/auth-guard';
 import { moduloGuard } from './guards/modulo-guard';
-
+import { Reportes } from './components/reportes/reportes/reportes';
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'iniciar-sesion', component: InicioSesion },
@@ -34,6 +34,7 @@ export const routes: Routes = [
       // Gestión administrativa (SIGCON)
       { path: 'gestion-roles', component: RegistrarRol, canActivate: [moduloGuard] },
       // Sprint 4
+      { path: 'reportes', component: Reportes, canActivate: [moduloGuard] },
       { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] },
     ],
   },

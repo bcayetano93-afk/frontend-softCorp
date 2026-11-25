@@ -1,0 +1,69 @@
+<h1 class="page-title">Reportes</h1>
+<p class="page-subtitle">Seguimiento de los equipos para la toma de decisiones del jefe del área.</p>
+
+<!-- HU10: equipos con problemas complicados -->
+<section class="card">
+  <h2 class="card-title">Equipos con problemas complicados ({{ equipos().length }})</h2>
+  <p class="nota">Incidencias pendientes cuyo equipo fue trasladado al área de soporte o espera un repuesto.</p>
+
+  <!-- Filtros: al cambiar, se vuelve a pedir el reporte al backend -->
+  <div class="filter-bar">
+    <select [(ngModel)]="filtro.situacion" (change)="cargar()">
+      <option value="TODOS">Todas las situaciones</option>
+      <option value="TRASLADADO">Trasladado al área</option>
+      <option value="ESPERA_REPUESTO">En espera de repuesto</option>
+    </select>
+
+    <select [(ngModel)]="filtro.idTecnico" (change)="cargar()">
+      <option [ngValue]="null">Todos los técnicos</option>
+      @for (t of tecnicos(); track t.idTecnico) {
+        <option [ngValue]="t.idTecnico">{{ t.nombre }}</option>
+      }
+    </select>
+
+    <button class="btn-secondary" type="button" (click)="limpiar()">Limpiar</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Equipo</th>
+          <th>Problema</th>
+          <th>Usuario / Área</th>
+          <th>Técnico</th>
+          <th>Situación</th>
+          <th>Registro</th>
+          <th>Días</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of equipos(); track e.idIncidencia) {
+          <tr>
+            <td><strong>{{ e.codigo }}</strong></td>
+            <td>{{ e.codigoEquipo }}</td>
+            <td>{{ e.problema }}</td>
+            <td>{{ e.usuarioResponsable }}<br /><small>{{ e.area ?? 'Sin área' }}</small></td>
+            <td>{{ e.tecnico ?? '—' }}</td>
+            <td>
+              @if (e.trasladado) {
+                <span class="badge badge-pendiente">En área soporte</span>
+              }
+              @if (e.esperaRepuesto) {
+                <span class="badge badge-sin-cupo">Espera repuesto</span>
+              }
+            </td>
+            <td>{{ e.fechaRegistro | date: 'dd/MM/yyyy' }}</td>
+            <!-- Resalta los que pasan los días de alerta -->
+            <td [class.dias-alerta]="e.diasTranscurridos >= DIAS_ALERTA">{{ e.diasTranscurridos }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty">No hay equipos con problemas complicados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

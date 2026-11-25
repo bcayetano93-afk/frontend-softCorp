@@ -1,0 +1,15 @@
+.nota {
+  margin: -6px 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Días resaltados cuando el equipo lleva demasiado tiempo pendiente */
+.dias-alerta {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.badge + .badge {
+  margin-left: 4px;
+}
