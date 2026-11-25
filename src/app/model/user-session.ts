@@ -1,7 +1,10 @@
 // Opción del menú (viene del backend dentro del token)
 export interface Modulo {
+  idMod?: number;
   descripcion: string;
   url: string;
+  activo?: boolean | string;
+  ordenOpcion?: number;
 }
 
 // Datos del usuario que inició sesión (se leen del token)

@@ -1,17 +1,22 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Incidencia, InformeTecnico, LugarAtencion } from '../../../model/incidencia';
 import { IncidenciaService } from '../../../services/incidencia';
 import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
 import { ToastService } from '../../../services/toast';
+import { ClassGeneric } from '../../../util/class-generic';
 import { RegexConstants, onEnterKey } from '../../../util/constant';
+import { setListRow } from '../../../util/methods';
+import { TablePagination } from '../../shared/table-pagination/table-pagination';
+
+type InformeRow = InformeTecnico & ClassGeneric;
 
 // HU08 - Registrar informe técnico y cerrar incidencia como SOLUCIONADO
 @Component({
   selector: 'app-informe-tecnico',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, TablePagination],
   templateUrl: './informe-tecnico.html',
   styleUrl: './informe-tecnico.scss',
 })
@@ -22,7 +27,17 @@ export class InformeTecnicoComponent implements OnInit {
   public RG = RegexConstants;
 
   incidenciasPendientes = signal<Incidencia[]>([]);
-  informes = signal<InformeTecnico[]>([]);
+  informes = signal<InformeRow[]>([]);
+  page = signal(1);
+  pageSize = signal(10);
+
+  informesPaginados = computed(() => {
+    const lista = this.informes();
+    const totalPages = Math.max(1, Math.ceil(lista.length / this.pageSize()));
+    const current = Math.min(Math.max(1, this.page()), totalPages);
+    const start = (current - 1) * this.pageSize();
+    return lista.slice(start, start + this.pageSize());
+  });
 
   form = {
     idIncidencia: null as number | null,
@@ -48,7 +63,7 @@ export class InformeTecnicoComponent implements OnInit {
     });
 
     this.soporteService.listarInformes().subscribe({
-      next: (lista) => this.informes.set(lista),
+      next: (lista) => this.informes.set(setListRow(lista)),
       error: (err: HttpErrorResponse) => {
         this.informes.set([]);
         this.toast.show(err.error?.message ?? 'No se pudieron cargar los informes técnicos.', 'danger');
@@ -84,6 +99,7 @@ export class InformeTecnicoComponent implements OnInit {
             piezasCambiadas: '',
             lugarSolucion: 'OFICINA_USUARIO',
           };
+          this.page.set(1);
           this.cargarDatos();
         },
         error: (err: HttpErrorResponse) => {

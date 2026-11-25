@@ -14,7 +14,7 @@
       <a routerLink="/principal" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <span class="menu-icon">🏠</span> Inicio
       </a>
-      @for (modulo of user?.modulos; track modulo.url) {
+      @for (modulo of modulosVisibles; track modulo.url) {
         <a [routerLink]="['/principal', modulo.url]" routerLinkActive="active">
           <span class="menu-icon">{{ icono(modulo.url) }}</span> {{ modulo.descripcion }}
         </a>

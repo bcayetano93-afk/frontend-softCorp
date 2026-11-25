@@ -1,0 +1,43 @@
+@use 'sass:map';
+@use 'sass:math';
+@forward 'sass:map';
+
+// Breakpoints en em para mejor accesibilidad (base 16px)
+$breakpoints: (
+  'sm': 36em,
+  'md': 48em,
+  'lg': 62em,
+  'xl': 75em,
+  'xxl': 87.5em,
+);
+
+// Colores de la marca SoftCorp
+$colors: (
+  'navy': #0f2a47,
+  'navy-dark': #0a1d33,
+  'orange': #f26b3a,
+  'orange-dark': #d9562a,
+  'teal': #12a389,
+  'text': #1e2b3a,
+  'muted': #64748b,
+  'border': #e2e8f0,
+  'bg-soft': #f4f7fb,
+  'white': #ffffff,
+);
+
+@function rem($px) {
+  @if not math.is-unitless($px) {
+    $px: math.div($px, 1px);
+  }
+  @return math.div($px, 16) * 1rem;
+}
+
+@mixin respond-to($breakpoint) {
+  @if map.has-key($breakpoints, $breakpoint) {
+    @media (max-width: map.get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "No se encontró el breakpoint: #{$breakpoint}";
+  }
+}

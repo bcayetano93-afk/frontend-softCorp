@@ -101,16 +101,32 @@
 </section>
 
 <section class="card">
-  <h2 class="card-title">Soluciones registradas ({{ fallasFiltradas().length }})</h2>
+  <div class="table-toolbar">
+    <div>
+      <h2 class="card-title" style="margin-bottom: 2px">
+        Soluciones registradas ({{ fallasFiltradas().length }})
+      </h2>
+      <span class="filter-count">
+        Mostrando {{ fallasFiltradas().length }} de {{ fallas().length }} registros
+      </span>
+    </div>
+    <button type="button" class="btn-secondary" (click)="toggleExtendedCols()">
+      {{ showExtendedCols() ? 'Ocultar columnas adicionales' : 'Mostrar columnas adicionales' }}
+    </button>
+  </div>
 
   <div class="filter-bar">
     <input
       type="text"
       placeholder="Buscar por código, título, síntomas, causa o solución..."
-      [(ngModel)]="palabraBusqueda"
+      [ngModel]="palabraBusqueda()"
+      (ngModelChange)="palabraBusqueda.set($event); page.set(1)"
       (input)="RG.text($event)"
     />
-    <select [(ngModel)]="categoriaBusqueda">
+    <select
+      [ngModel]="categoriaBusqueda()"
+      (ngModelChange)="categoriaBusqueda.set($event); page.set(1)"
+    >
       <option value="">Todas las categorías</option>
       @for (cat of categorias; track cat) {
         <option [value]="cat">{{ cat }}</option>
@@ -124,37 +140,49 @@
       <thead>
         <tr>
           <th>Sel.</th>
+          <th>Nro.</th>
           <th>Código</th>
           <th>Categoría</th>
           <th>Falla / Causa</th>
-          <th>Síntomas</th>
+          @if (showExtendedCols()) {
+            <th>Síntomas</th>
+          }
           <th>Solución</th>
-          <th>Autor</th>
+          @if (showExtendedCols()) {
+            <th>Autor</th>
+          }
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (f of fallasFiltradas(); track f.idFalla) {
-          <tr>
+        @for (f of fallasPaginadas(); track f.idFalla) {
+          <tr [class.row-highlight-selected]="selectedRowId === f.idFalla">
             <td>
               <input
                 type="checkbox"
+                class="row-checkbox"
                 [checked]="selectedRowId === f.idFalla"
+                [attr.aria-label]="'Seleccionar falla ' + f.codigoFalla"
                 (change)="onCheckboxChange(f.idFalla, $any($event.target).checked)"
               />
             </td>
+            <td>{{ f.row }}</td>
             <td class="code">{{ f.codigoFalla }}</td>
             <td><span class="badge badge-pendiente">{{ f.categoria }}</span></td>
             <td>
               <strong>{{ f.titulo }}</strong><br />
               <small>{{ f.causaProbable }}</small>
             </td>
-            <td>{{ f.sintomas }}</td>
+            @if (showExtendedCols()) {
+              <td>{{ f.sintomas }}</td>
+            }
             <td>{{ f.solucion }}</td>
-            <td class="nowrap">
-              {{ f.autor }}<br />
-              <small>{{ (f.updatedAt || f.createdAt) | date: 'dd/MM/yyyy' }}</small>
-            </td>
+            @if (showExtendedCols()) {
+              <td class="nowrap">
+                {{ f.autor }}<br />
+                <small>{{ (f.updatedAt || f.createdAt) | date: 'dd/MM/yyyy' }}</small>
+              </td>
+            }
             <td class="nowrap">
               <button
                 class="btn-action"
@@ -179,10 +207,21 @@
           </tr>
         } @empty {
           <tr>
-            <td class="empty" colspan="8">No hay coincidencias en el diccionario de fallas.</td>
+            <td class="empty" [attr.colspan]="showExtendedCols() ? 9 : 7">
+              No hay coincidencias en el diccionario de fallas.
+            </td>
           </tr>
         }
       </tbody>
     </table>
   </div>
+
+  <app-table-pagination
+    [totalItems]="fallasFiltradas().length"
+    [totalUnfiltered]="fallas().length"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    (pageChange)="page.set($event)"
+    (pageSizeChange)="pageSize.set($event)"
+  />
 </section>

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { UserSession } from '../model/user-session';
+import { Modulo, UserSession } from '../model/user-session';
 import { StorageService } from './storage';
 
 export const TOKEN_KEY = 'user_token';
@@ -14,13 +14,19 @@ export class SessionService {
     if (!datos) {
       return null;
     }
+
+    const rawModulos: Modulo[] = Array.isArray(datos.modules) ? datos.modules : [];
+    const modulos = rawModulos
+      .filter((m) => m.activo !== false && m.activo !== 'N')
+      .sort((a, b) => (a.ordenOpcion ?? Number.MAX_SAFE_INTEGER) - (b.ordenOpcion ?? Number.MAX_SAFE_INTEGER));
+
     return {
       username: datos.sub,
       nombres: datos.names,
       apellidos: datos.lastNames,
       rol: datos.role,
       rolDescripcion: datos.roleDescription,
-      modulos: datos.modules ?? [],
+      modulos,
       expira: datos.exp,
     };
   }

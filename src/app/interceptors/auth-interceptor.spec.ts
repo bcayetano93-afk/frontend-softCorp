@@ -1,19 +1,23 @@
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
+import { ConfirmDialogService } from '../services/confirm-dialog';
 import { TOKEN_KEY } from '../services/session';
+import { ToastService } from '../services/toast';
 import { authInterceptor } from './auth-interceptor';
 
 describe('authInterceptor', () => {
   let http: HttpClient;
   let httpTesting: HttpTestingController;
+  let confirmDialog: ConfirmDialogService;
+  let toastService: ToastService;
+  let router: Router;
 
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
-        // Ruta a la que el interceptor redirige cuando hay un 401
         provideRouter([{ path: 'iniciar-sesion', children: [] }]),
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
@@ -21,6 +25,9 @@ describe('authInterceptor', () => {
     });
     http = TestBed.inject(HttpClient);
     httpTesting = TestBed.inject(HttpTestingController);
+    confirmDialog = TestBed.inject(ConfirmDialogService);
+    toastService = TestBed.inject(ToastService);
+    router = TestBed.inject(Router);
   });
 
   it('should add the Bearer token to the requests', () => {
@@ -39,10 +46,51 @@ describe('authInterceptor', () => {
     req.flush({ token: 'x' });
   });
 
-  it('should remove the token when the backend answers 401', () => {
+  it('should remove token, open blocking 401 modal, absorb error, and navigate on accept', async () => {
     localStorage.setItem(TOKEN_KEY, 'vencido');
-    http.get('/api/v1/incidencias').subscribe({ error: () => {} });
-    httpTesting.expectOne('/api/v1/incidencias').flush(null, { status: 401, statusText: 'Unauthorized' });
+    let errored = false;
+    let completed = false;
+
+    http.get('/api/v1/incidencias').subscribe({
+      error: () => (errored = true),
+      complete: () => (completed = true),
+    });
+
+    httpTesting
+      .expectOne('/api/v1/incidencias')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
+
     expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
+    expect(errored).toBe(false);
+    expect(completed).toBe(true);
+
+    const dlg = confirmDialog.activeDialog();
+    expect(dlg?.title).toBe('¡Sesión expirada!');
+    expect(dlg?.mode).toBe('alert');
+    expect(dlg?.allowOutsideClick).toBe(false);
+
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    confirmDialog.accept();
+    await vi.waitFor(() => {
+      expect(navigateSpy).toHaveBeenCalledWith(['/iniciar-sesion']);
+      expect(router.url).toBe('/iniciar-sesion');
+    });
+  });
+
+  it('should keep token and show danger toast on 403', () => {
+    localStorage.setItem(TOKEN_KEY, 'valido');
+    let errored = false;
+
+    http.post('/api/v1/rol/save', {}).subscribe({
+      error: () => (errored = true),
+    });
+
+    httpTesting
+      .expectOne('/api/v1/rol/save')
+      .flush({ message: 'Forbidden' }, { status: 403, statusText: 'Forbidden' });
+
+    expect(errored).toBe(true);
+    expect(localStorage.getItem(TOKEN_KEY)).toBe('valido');
+    expect(toastService.toasts().some((t) => t.type === 'danger')).toBe(true);
   });
 });

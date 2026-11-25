@@ -13,7 +13,7 @@
 
   <h2 class="card-title">Tus módulos</h2>
   <div class="modules-grid">
-    @for (modulo of user.modulos; track modulo.url) {
+    @for (modulo of modulosVisibles; track modulo.url) {
       <a class="module-card" [routerLink]="['/principal', modulo.url]">
         <span class="module-icon">{{ icono(modulo.url) }}</span>
         <h3>{{ modulo.descripcion }}</h3>

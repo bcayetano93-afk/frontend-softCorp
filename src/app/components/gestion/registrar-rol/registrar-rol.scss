@@ -1,0 +1,15 @@
+.code {
+  color: var(--orange);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}

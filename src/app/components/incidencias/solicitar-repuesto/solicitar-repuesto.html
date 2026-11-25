@@ -91,15 +91,37 @@
 </section>
 
 <section class="card">
-  <h2 class="card-title">Estado de solicitudes ({{ solicitudesFiltradas().length }})</h2>
+  <div class="table-toolbar">
+    <div>
+      <h2 class="card-title" style="margin-bottom: 2px">
+        Estado de solicitudes ({{ solicitudesFiltradas().length }})
+      </h2>
+      <span class="filter-count">
+        Mostrando {{ solicitudesFiltradas().length }} de {{ solicitudes().length }} registros
+      </span>
+    </div>
+    <button type="button" class="btn-secondary" (click)="toggleExtendedCols()">
+      {{ showExtendedCols() ? 'Ocultar columnas adicionales' : 'Mostrar columnas adicionales' }}
+    </button>
+  </div>
 
   <div class="filter-bar">
     <input
       type="text"
       placeholder="Buscar por código de solicitud, incidencia, equipo o repuesto..."
-      [(ngModel)]="textoFiltro"
+      [ngModel]="textoFiltro()"
+      (ngModelChange)="textoFiltro.set($event); page.set(1)"
       (input)="RG.text($event)"
     />
+    <select
+      [ngModel]="estadoFiltro()"
+      (ngModelChange)="estadoFiltro.set($event); page.set(1)"
+    >
+      <option value="TODOS">Todos los estados</option>
+      <option value="SOLICITADO">Solicitado</option>
+      <option value="RECIBIDO">Recibido</option>
+      <option value="RECHAZADO">Rechazado</option>
+    </select>
     <button class="btn-secondary" type="button" (click)="limpiarFiltro()">Limpiar</button>
   </div>
 
@@ -108,32 +130,40 @@
       <thead>
         <tr>
           <th>Sel.</th>
+          <th>Nro.</th>
           <th>Solicitud</th>
           <th>Incidencia</th>
           <th>Equipo</th>
           <th>Repuesto (Cant.)</th>
-          <th>Traslado</th>
-          <th>Fecha</th>
+          @if (showExtendedCols()) {
+            <th>Traslado</th>
+            <th>Fecha</th>
+          }
           <th>Estado</th>
           <th>Actualizar estado</th>
         </tr>
       </thead>
       <tbody>
-        @for (s of solicitudesFiltradas(); track s.idSolicitud) {
-          <tr>
+        @for (s of solicitudesPaginadas(); track s.idSolicitud) {
+          <tr [class.row-highlight-selected]="selectedRowId === s.idSolicitud">
             <td>
               <input
                 type="checkbox"
+                class="row-checkbox"
                 [checked]="selectedRowId === s.idSolicitud"
+                [attr.aria-label]="'Seleccionar solicitud ' + s.codigoSolicitud"
                 (change)="onCheckboxChange(s.idSolicitud, $any($event.target).checked)"
               />
             </td>
+            <td>{{ s.row }}</td>
             <td class="code">{{ s.codigoSolicitud }}</td>
             <td class="code">{{ s.codigoIncidencia }}</td>
             <td><strong>{{ s.codigoEquipo }}</strong></td>
             <td>{{ s.codigoRepuesto }} — {{ s.nombreRepuesto }} ({{ s.cantidad }})</td>
-            <td>{{ s.trasladarEquipo ? 'Sí (En soporte)' : 'No' }}</td>
-            <td class="nowrap">{{ s.fechaSolicitud | date: 'dd/MM/yyyy HH:mm' }}</td>
+            @if (showExtendedCols()) {
+              <td>{{ s.trasladarEquipo ? 'Sí (En soporte)' : 'No' }}</td>
+              <td class="nowrap">{{ s.fechaSolicitud | date: 'dd/MM/yyyy HH:mm' }}</td>
+            }
             <td>
               <span
                 class="badge"
@@ -154,6 +184,13 @@
                 type="button"
                 style="background: var(--teal)"
                 [disabled]="selectedRowId !== s.idSolicitud || s.estado !== 'SOLICITADO'"
+                [title]="
+                  selectedRowId !== s.idSolicitud
+                    ? 'Seleccione la fila para actualizar'
+                    : s.estado !== 'SOLICITADO'
+                      ? 'Solo se pueden actualizar solicitudes pendientes'
+                      : 'Marcar como recibido'
+                "
                 (click)="avanzarEstado(s, 'RECIBIDO')"
               >
                 Recibido
@@ -163,6 +200,13 @@
                 type="button"
                 style="margin-left: 6px; background: var(--orange-dark)"
                 [disabled]="selectedRowId !== s.idSolicitud || s.estado !== 'SOLICITADO'"
+                [title]="
+                  selectedRowId !== s.idSolicitud
+                    ? 'Seleccione la fila para actualizar'
+                    : s.estado !== 'SOLICITADO'
+                      ? 'Solo se pueden actualizar solicitudes pendientes'
+                      : 'Marcar como rechazado'
+                "
                 (click)="avanzarEstado(s, 'RECHAZADO')"
               >
                 Rechazado
@@ -171,10 +215,21 @@
           </tr>
         } @empty {
           <tr>
-            <td class="empty" colspan="9">No hay solicitudes de repuestos registradas.</td>
+            <td class="empty" [attr.colspan]="showExtendedCols() ? 10 : 8">
+              No hay solicitudes de repuestos registradas.
+            </td>
           </tr>
         }
       </tbody>
     </table>
   </div>
+
+  <app-table-pagination
+    [totalItems]="solicitudesFiltradas().length"
+    [totalUnfiltered]="solicitudes().length"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    (pageChange)="page.set($event)"
+    (pageSizeChange)="pageSize.set($event)"
+  />
 </section>

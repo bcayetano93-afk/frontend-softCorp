@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { iconoModulo } from '../../../model/iconos';
-import { UserSession } from '../../../model/user-session';
+import { Modulo, UserSession } from '../../../model/user-session';
 import { SessionService } from '../../../services/session';
 import { ChartIncidencias } from '../../dashboards/chart-incidencias/chart-incidencias';
 
@@ -14,4 +14,15 @@ import { ChartIncidencias } from '../../dashboards/chart-incidencias/chart-incid
 export class Bienvenida {
   user: UserSession | null = inject(SessionService).getInfoSession();
   icono = iconoModulo;
+
+  get modulosVisibles(): Modulo[] {
+    if (!this.user) {
+      return [];
+    }
+    const base = [...this.user.modulos];
+    if (this.user.rol === 'JEFE' && !base.some((m) => m.url === 'gestion-roles')) {
+      base.push({ descripcion: 'Gestión de roles', url: 'gestion-roles', ordenOpcion: 99 });
+    }
+    return base;
+  }
 }

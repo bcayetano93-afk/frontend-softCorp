@@ -6,6 +6,7 @@ const ICONOS: Record<string, string> = {
   'solicitar-repuesto': '📦',
   'informe-tecnico': '📄',
   'diccionario-fallas': '📚',
+  'gestion-roles': '🔐',
   reportes: '📊',
   'historial-equipos': '🖥️',
 };

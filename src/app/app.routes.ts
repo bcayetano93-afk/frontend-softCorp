@@ -7,6 +7,7 @@ import { InformeTecnicoComponent } from './components/incidencias/informe-tecnic
 import { MisTareas } from './components/incidencias/mis-tareas/mis-tareas';
 import { RegistrarIncidencia } from './components/incidencias/registrar-incidencia/registrar-incidencia';
 import { SolicitarRepuestoComponent } from './components/incidencias/solicitar-repuesto/solicitar-repuesto';
+import { RegistrarRol } from './components/gestion/registrar-rol/registrar-rol';
 import { Bienvenida } from './components/principal/bienvenida/bienvenida';
 import { Principal } from './components/principal/principal';
 import { Proximamente } from './components/principal/proximamente/proximamente';
@@ -30,6 +31,8 @@ export const routes: Routes = [
       { path: 'solicitar-repuesto', component: SolicitarRepuestoComponent, canActivate: [moduloGuard] },
       { path: 'informe-tecnico', component: InformeTecnicoComponent, canActivate: [moduloGuard] },
       { path: 'diccionario-fallas', component: DiccionarioFallas, canActivate: [moduloGuard] },
+      // Gestión administrativa (SIGCON)
+      { path: 'gestion-roles', component: RegistrarRol, canActivate: [moduloGuard] },
       // Sprint 4
       { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] },
     ],

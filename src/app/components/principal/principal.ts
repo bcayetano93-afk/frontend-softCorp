@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { iconoModulo } from '../../model/iconos';
-import { UserSession } from '../../model/user-session';
+import { Modulo, UserSession } from '../../model/user-session';
 import { AuthService } from '../../services/auth';
 import { SessionService } from '../../services/session';
 import { ToastService } from '../../services/toast';
@@ -22,6 +22,17 @@ export class Principal {
   user: UserSession | null = inject(SessionService).getInfoSession();
 
   icono = iconoModulo;
+
+  get modulosVisibles(): Modulo[] {
+    if (!this.user) {
+      return [];
+    }
+    const base = [...this.user.modulos];
+    if (this.user.rol === 'JEFE' && !base.some((m) => m.url === 'gestion-roles')) {
+      base.push({ descripcion: 'Gestión de roles', url: 'gestion-roles', ordenOpcion: 99 });
+    }
+    return base;
+  }
 
   cerrarSesion(): void {
     this.auth.logout();

@@ -3,14 +3,17 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { EMPTY, catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth';
+import { ConfirmDialogService } from '../services/confirm-dialog';
 import { ToastService } from '../services/toast';
 
 let isHandling401 = false;
 
 // Agrega "Authorization: Bearer <token>" a cada petición al backend.
-// Si el backend responde 401, cierra la sesión una sola vez y absorbe peticiones concurrentes.
+// Si el backend responde 401, cierra la sesión una sola vez, muestra modal bloqueante (patrón SIGCON)
+// y absorbe peticiones concurrentes.
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const confirmDialog = inject(ConfirmDialogService);
   const toastService = inject(ToastService);
   const router = inject(Router);
 
@@ -31,8 +34,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         if (!isHandling401) {
           isHandling401 = true;
           authService.logout();
-          toastService.show('Tu sesión ha caducado. Vuelve a iniciar sesión.', 'warning');
-          router.navigate(['/iniciar-sesion']);
+          confirmDialog
+            .alert({
+              title: '¡Sesión expirada!',
+              message: 'Su sesión ha caducado, debe iniciar sesión nuevamente.',
+              confirmText: 'Iniciar sesión',
+              variant: 'warning',
+              allowOutsideClick: false,
+            })
+            .then(() => {
+              router.navigate(['/iniciar-sesion']);
+            });
         }
         return EMPTY;
       }

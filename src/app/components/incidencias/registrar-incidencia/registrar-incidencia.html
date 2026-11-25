@@ -81,53 +81,130 @@
   </form>
 </section>
 
-<!-- Filtros y lista de incidencias -->
+<!-- Filtros por columna, toggle de columnas y tabla paginada -->
 <section class="card">
-  <h2 class="card-title">Incidencias registradas ({{ incidencias().length }})</h2>
+  <div class="table-toolbar">
+    <div>
+      <h2 class="card-title" style="margin-bottom: 2px">
+        Incidencias registradas ({{ incidencias().length }})
+      </h2>
+      <span class="filter-count">
+        Mostrando {{ incidencias().length }} de {{ totalIncidencias() }} registros
+      </span>
+    </div>
+    <button type="button" class="btn-secondary" (click)="toggleExtendedCols()">
+      {{ showExtendedCols() ? 'Ocultar columnas adicionales' : 'Mostrar columnas adicionales' }}
+    </button>
+  </div>
 
-  <div class="filter-bar">
-    <input
-      type="text"
-      placeholder="Buscar por código, equipo, problema, responsable o área..."
-      [(ngModel)]="filtro.texto"
-      (input)="applyFilter()"
-    />
-    <select [(ngModel)]="filtro.estado" (change)="applyFilter()">
-      <option value="TODOS">Todos los estados</option>
-      <option value="PENDIENTE">Pendiente</option>
-      <option value="SOLUCIONADO">Solucionado</option>
-    </select>
-    <button class="btn-secondary" type="button" (click)="clearFilter()">Limpiar</button>
+  <div class="filter-grid">
+    <div class="filter-col">
+      <label class="filter-label" for="fltCodigo">Código</label>
+      <input
+        id="fltCodigo"
+        type="text"
+        placeholder="INC-..."
+        [ngModel]="filtroCodigo()"
+        (ngModelChange)="filtroCodigo.set($event); onFilterChange()"
+      />
+    </div>
+
+    <div class="filter-col">
+      <label class="filter-label" for="fltEquipo">Equipo</label>
+      <input
+        id="fltEquipo"
+        type="text"
+        placeholder="PC-..."
+        [ngModel]="filtroEquipo()"
+        (ngModelChange)="filtroEquipo.set($event); onFilterChange()"
+      />
+    </div>
+
+    <div class="filter-col">
+      <label class="filter-label" for="fltProblema">Problema</label>
+      <input
+        id="fltProblema"
+        type="text"
+        placeholder="Buscar..."
+        [ngModel]="filtroProblema()"
+        (ngModelChange)="filtroProblema.set($event); onFilterChange()"
+      />
+    </div>
+
+    <div class="filter-col">
+      <label class="filter-label" for="fltResponsable">Responsable</label>
+      <input
+        id="fltResponsable"
+        type="text"
+        placeholder="Buscar..."
+        [ngModel]="filtroResponsable()"
+        (ngModelChange)="filtroResponsable.set($event); onFilterChange()"
+      />
+    </div>
+
+    <div class="filter-col">
+      <label class="filter-label" for="fltArea">Área</label>
+      <input
+        id="fltArea"
+        type="text"
+        placeholder="Buscar..."
+        [ngModel]="filtroArea()"
+        (ngModelChange)="filtroArea.set($event); onFilterChange()"
+      />
+    </div>
+
+    <div class="filter-col">
+      <label class="filter-label" for="fltEstado">Estado</label>
+      <select
+        id="fltEstado"
+        [ngModel]="filtroEstado()"
+        (ngModelChange)="filtroEstado.set($event); onFilterChange()"
+      >
+        <option value="TODOS">Todos</option>
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="SOLUCIONADO">Solucionado</option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-secondary" type="button" (click)="clearFilter()">Limpiar</button>
+    </div>
   </div>
 
   <div class="table-wrapper">
     <table class="data-table">
       <thead>
         <tr>
+          <th>Nro.</th>
           <th>Código</th>
           <th>Equipo</th>
           <th>Problema</th>
           <th>Usuario responsable</th>
-          <th>Área</th>
-          <th>Medio</th>
-          <th>Fecha y hora</th>
-          <th>Registrado por</th>
-          <th>Técnico</th>
+          @if (showExtendedCols()) {
+            <th>Área</th>
+            <th>Medio</th>
+            <th>Fecha y hora</th>
+            <th>Registrado por</th>
+            <th>Técnico</th>
+          }
           <th>Estado</th>
         </tr>
       </thead>
       <tbody>
-        @for (incidencia of incidencias(); track incidencia.idIncidencia) {
+        @for (incidencia of incidenciasPaginadas(); track incidencia.idIncidencia) {
           <tr>
+            <td>{{ incidencia.row }}</td>
             <td class="code">{{ incidencia.codigo }}</td>
             <td><strong>{{ incidencia.codigoEquipo }}</strong></td>
             <td>{{ incidencia.problema }}</td>
             <td>{{ incidencia.usuarioResponsable }}</td>
-            <td>{{ incidencia.area || '-' }}</td>
-            <td>{{ incidencia.medioReporte === 'EMAIL' ? 'Email' : 'Teléfono' }}</td>
-            <td class="nowrap">{{ incidencia.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}</td>
-            <td>{{ incidencia.registradoPor }}</td>
-            <td>{{ incidencia.tecnico ?? 'Sin asignar' }}</td>
+            @if (showExtendedCols()) {
+              <td>{{ incidencia.area || '-' }}</td>
+              <td>{{ incidencia.medioReporte === 'EMAIL' ? 'Email' : 'Teléfono' }}</td>
+              <td class="nowrap">{{ incidencia.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ incidencia.registradoPor }}</td>
+              <td>{{ incidencia.tecnico ?? 'Sin asignar' }}</td>
+            }
             <td>
               <span class="badge" [class]="'badge badge-' + incidencia.estado.toLowerCase()">
                 {{ incidencia.estado === 'PENDIENTE' ? 'Pendiente' : 'Solucionado' }}
@@ -136,10 +213,21 @@
           </tr>
         } @empty {
           <tr>
-            <td class="empty" colspan="10">No se encontraron incidencias con los filtros aplicados.</td>
+            <td class="empty" [attr.colspan]="showExtendedCols() ? 11 : 6">
+              No se encontraron incidencias con los filtros aplicados.
+            </td>
           </tr>
         }
       </tbody>
     </table>
   </div>
+
+  <app-table-pagination
+    [totalItems]="incidencias().length"
+    [totalUnfiltered]="totalIncidencias()"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    (pageChange)="page.set($event)"
+    (pageSizeChange)="pageSize.set($event)"
+  />
 </section>

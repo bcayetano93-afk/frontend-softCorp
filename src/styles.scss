@@ -1,6 +1,7 @@
 /* ============================================
    Estilos globales: se aplican a toda la página
    ============================================ */
+@use 'abstracts/shared' as *;
 
 /* Colores de la marca (se usan en todos los componentes con var(--nombre)) */
 :root {
@@ -359,4 +360,224 @@ a {
 .field textarea.ng-invalid.ng-touched {
   border-color: var(--orange-dark);
 }
+
+/* ============================================
+   Patrones SIGCON: selección de filas, toolbar,
+   filtros por columna, paginación y modales
+   ============================================ */
+.row-checkbox {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--navy);
+}
+
+.data-table tbody tr.row-highlight-selected {
+  background-color: rgba(18, 163, 137, 0.12);
+
+  td:first-child {
+    box-shadow: inset 3px 0 0 var(--teal);
+  }
+}
+
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.filter-count {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 12px;
+  align-items: end;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.filter-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  input,
+  select {
+    width: 100%;
+    padding: 7px 10px;
+    color: var(--text);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+
+    &:focus {
+      border-color: var(--orange);
+      outline: none;
+    }
+  }
+}
+
+.filter-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* Paginación reutilizable */
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  select {
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--white);
+  }
+}
+
+/* Modales nativos compatibles con SoftCorp */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 29, 51, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: 460px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 20px 45px rgba(10, 29, 51, 0.25);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-soft);
+
+  h2,
+  h3 {
+    margin: 0;
+    font-size: 17px;
+    color: var(--navy);
+  }
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+
+  &:hover {
+    color: var(--navy);
+  }
+}
+
+.modal-body {
+  padding: 20px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+
+.btn-danger {
+  padding: 9px 18px;
+  color: var(--white);
+  background: var(--orange-dark);
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #b9441e;
+  }
+}
+
+.btn-teal {
+  padding: 9px 18px;
+  color: var(--white);
+  background: var(--teal);
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #0e8570;
+  }
+}
+
 

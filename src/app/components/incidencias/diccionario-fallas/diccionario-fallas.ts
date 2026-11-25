@@ -3,19 +3,26 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CategoriaFalla, FallaDiccionario } from '../../../model/incidencia';
+import { ConfirmDialogService } from '../../../services/confirm-dialog';
 import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
 import { ToastService } from '../../../services/toast';
+import { ClassGeneric } from '../../../util/class-generic';
 import { RegexConstants, onEnterKey } from '../../../util/constant';
+import { setListRow } from '../../../util/methods';
+import { TablePagination } from '../../shared/table-pagination/table-pagination';
 
-// HU09 - Diccionario de fallas (CRUD conectado al backend)
+type FallaRow = FallaDiccionario & ClassGeneric;
+
+// HU09 - Diccionario de fallas (CRUD conectado al backend, filtros reactivos, selección por fila y paginación)
 @Component({
   selector: 'app-diccionario-fallas',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, TablePagination],
   templateUrl: './diccionario-fallas.html',
   styleUrl: './diccionario-fallas.scss',
 })
 export class DiccionarioFallas implements OnInit {
   private soporteService = inject(SoporteTecnicoService);
+  private confirmDialog = inject(ConfirmDialogService);
   private toast = inject(ToastService);
   public RG = RegexConstants;
 
@@ -28,17 +35,21 @@ export class DiccionarioFallas implements OnInit {
     'OTRO',
   ];
 
-  fallas = signal<FallaDiccionario[]>([]);
-  palabraBusqueda = '';
-  categoriaBusqueda = '';
+  fallas = signal<FallaRow[]>([]);
+  palabraBusqueda = signal('');
+  categoriaBusqueda = signal('');
+  showExtendedCols = signal(false);
+  page = signal(1);
+  pageSize = signal(10);
+
   selectedRowId: number | null = null;
   editandoId: number | null = null;
 
   form = this.formVacio();
 
   fallasFiltradas = computed(() => {
-    const q = this.palabraBusqueda.trim().toLowerCase();
-    const cat = this.categoriaBusqueda;
+    const q = this.palabraBusqueda().trim().toLowerCase();
+    const cat = this.categoriaBusqueda();
     return this.fallas().filter((f) => {
       if (cat && f.categoria !== cat) return false;
       if (!q) return true;
@@ -53,13 +64,21 @@ export class DiccionarioFallas implements OnInit {
     });
   });
 
+  fallasPaginadas = computed(() => {
+    const lista = this.fallasFiltradas();
+    const totalPages = Math.max(1, Math.ceil(lista.length / this.pageSize()));
+    const current = Math.min(Math.max(1, this.page()), totalPages);
+    const start = (current - 1) * this.pageSize();
+    return lista.slice(start, start + this.pageSize());
+  });
+
   ngOnInit(): void {
     this.cargarFallas();
   }
 
   cargarFallas(): void {
     this.soporteService.buscarFallas().subscribe({
-      next: (lista) => this.fallas.set(lista),
+      next: (lista) => this.fallas.set(setListRow(lista)),
       error: (err: HttpErrorResponse) => {
         this.fallas.set([]);
         this.toast.show(
@@ -72,6 +91,10 @@ export class DiccionarioFallas implements OnInit {
 
   onEnterKey(event: Event): void {
     onEnterKey(event);
+  }
+
+  toggleExtendedCols(): void {
+    this.showExtendedCols.update((v) => !v);
   }
 
   onCheckboxChange(idFalla: number, checked: boolean): void {
@@ -104,6 +127,7 @@ export class DiccionarioFallas implements OnInit {
           'success',
         );
         this.cancelarEdicion();
+        this.page.set(1);
         this.cargarFallas();
       },
       error: (err: HttpErrorResponse) => {
@@ -126,7 +150,19 @@ export class DiccionarioFallas implements OnInit {
     };
   }
 
-  eliminarFalla(falla: FallaDiccionario): void {
+  async eliminarFalla(falla: FallaDiccionario): Promise<void> {
+    const confirmado = await this.confirmDialog.confirm({
+      title: 'Eliminar falla del diccionario',
+      message: `¿Está seguro de eliminar el registro ${falla.codigoFalla} ("${falla.titulo}")?`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'No',
+      variant: 'danger',
+    });
+
+    if (!confirmado) {
+      return;
+    }
+
     this.soporteService.eliminarFalla(falla.idFalla).subscribe({
       next: () => {
         if (this.editandoId === falla.idFalla) {
@@ -151,8 +187,9 @@ export class DiccionarioFallas implements OnInit {
   }
 
   limpiarBusqueda(): void {
-    this.palabraBusqueda = '';
-    this.categoriaBusqueda = '';
+    this.palabraBusqueda.set('');
+    this.categoriaBusqueda.set('');
+    this.page.set(1);
   }
 
   private formVacio() {

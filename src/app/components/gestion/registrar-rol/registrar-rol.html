@@ -1,0 +1,183 @@
+<h1 class="page-title">Gestión de roles</h1>
+<p class="page-subtitle">Administra los roles del sistema y consulta los módulos disponibles.</p>
+
+<section class="card">
+  <div class="table-toolbar">
+    <h2 class="card-title" style="margin-bottom: 0">Roles registrados ({{ roles().length }})</h2>
+    @if (esJefe) {
+      <button type="button" class="btn-form" (click)="openAdd()">+ Agregar rol</button>
+    }
+  </div>
+
+  <div class="filter-grid">
+    <div class="filter-col">
+      <label class="filter-label" for="filtroRolNombre">Buscar por nombre</label>
+      <input
+        id="filtroRolNombre"
+        type="text"
+        maxlength="50"
+        placeholder="Ej. Técnico"
+        [ngModel]="filterDescripcion()"
+        (ngModelChange)="filterDescripcion.set($event)"
+        (input)="RG.name($event)"
+        (keyup.enter)="search()"
+      />
+    </div>
+
+    <div class="filter-actions">
+      <button type="button" class="btn-action" (click)="search()">Buscar</button>
+      <button type="button" class="btn-secondary" (click)="cleanSearch()">Limpiar</button>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Sel.</th>
+          <th>Nro.</th>
+          <th>Código</th>
+          <th>Nombre / Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (rol of rolesPaginados(); track rol.idRol) {
+          <tr [class.row-highlight-selected]="selectedRowId() === rol.idRol">
+            <td>
+              <input
+                type="checkbox"
+                class="row-checkbox"
+                [checked]="selectedRowId() === rol.idRol"
+                [attr.aria-label]="'Seleccionar rol ' + rol.codigo"
+                (change)="onCheckboxChange(rol.idRol, $any($event.target).checked)"
+              />
+            </td>
+            <td>{{ rol.row }}</td>
+            <td class="code">{{ rol.codigo }}</td>
+            <td>{{ rol.descripcion }}</td>
+            <td class="nowrap">
+              <button
+                type="button"
+                class="btn-action"
+                [disabled]="selectedRowId() !== rol.idRol || !esJefe"
+                [title]="selectedRowId() !== rol.idRol ? 'Seleccione la fila para editar' : 'Editar rol'"
+                (click)="openEdit(rol)"
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                class="btn-action"
+                style="margin-left: 6px; background: var(--orange-dark)"
+                [disabled]="selectedRowId() !== rol.idRol || !esJefe"
+                [title]="selectedRowId() !== rol.idRol ? 'Seleccione la fila para eliminar' : 'Eliminar rol'"
+                (click)="delete(rol)"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty" colspan="5">No se encontraron roles registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-table-pagination
+    [totalItems]="roles().length"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="[5, 10, 20]"
+    (pageChange)="page.set($event)"
+    (pageSizeChange)="pageSize.set($event)"
+  />
+</section>
+
+<section class="card">
+  <h2 class="card-title">Módulos del sistema ({{ modulos().length }})</h2>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nro.</th>
+          <th>Orden</th>
+          <th>Descripción</th>
+          <th>URL</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (mod of modulos(); track mod.idMod) {
+          <tr>
+            <td>{{ mod.row }}</td>
+            <td>{{ mod.ordenOpcion }}</td>
+            <td><strong>{{ mod.descripcion }}</strong></td>
+            <td class="code">{{ mod.url }}</td>
+            <td>
+              <span class="badge" [class]="mod.activo === 'S' ? 'badge badge-disponible' : 'badge badge-sin-cupo'">
+                {{ mod.activo === 'S' ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty" colspan="5">No hay módulos registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (showModal()) {
+  <div class="modal-backdrop" role="dialog" aria-modal="true" (click)="closeModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ record.idRol ? 'Editar rol' : 'Agregar rol' }}</h3>
+        <button type="button" class="modal-close" aria-label="Cerrar" (click)="closeModal()">×</button>
+      </div>
+
+      <form #rolFrm="ngForm" (ngSubmit)="save()" (keydown.enter)="onEnterKey($event)" autocomplete="off">
+        <div class="modal-body modal-form">
+          <div class="field">
+            <label for="rolCodigo">Código * (mayúsculas y guión bajo)</label>
+            <input
+              id="rolCodigo"
+              name="codigo"
+              required
+              minlength="3"
+              maxlength="20"
+              pattern="^[A-Z_]{3,20}$"
+              placeholder="Ej. SUPERVISOR"
+              [(ngModel)]="record.codigo"
+              (input)="RG.rolCodigo($event)"
+            />
+          </div>
+
+          <div class="field">
+            <label for="rolDescripcion">Nombre / Descripción *</label>
+            <input
+              id="rolDescripcion"
+              name="descripcion"
+              required
+              minlength="3"
+              maxlength="100"
+              placeholder="Ej. Supervisor de soporte"
+              [(ngModel)]="record.descripcion"
+              (input)="RG.name($event)"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-form" [disabled]="rolFrm.invalid">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

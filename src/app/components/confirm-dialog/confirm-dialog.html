@@ -1,0 +1,34 @@
+@if (dialogService.activeDialog(); as dlg) {
+  <div class="modal-backdrop" role="dialog" aria-modal="true" (click)="onBackdropClick()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header" [class]="'modal-header variant-' + dlg.variant">
+        <div class="dialog-title">
+          <span class="variant-dot" [class]="'variant-dot variant-' + dlg.variant"></span>
+          <h3>{{ dlg.title }}</h3>
+        </div>
+        @if (dlg.allowOutsideClick) {
+          <button type="button" class="modal-close" aria-label="Cerrar" (click)="dialogService.cancel()">×</button>
+        }
+      </div>
+
+      <div class="modal-body">
+        <p>{{ dlg.message }}</p>
+      </div>
+
+      <div class="modal-footer">
+        @if (dlg.mode === 'confirm') {
+          <button type="button" class="btn-secondary" (click)="dialogService.cancel()">
+            {{ dlg.cancelText }}
+          </button>
+        }
+        <button
+          type="button"
+          [class]="dlg.variant === 'danger' ? 'btn-danger' : 'btn-form'"
+          (click)="dialogService.accept()"
+        >
+          {{ dlg.confirmText }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

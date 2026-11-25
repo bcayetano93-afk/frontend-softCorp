@@ -2,42 +2,64 @@ import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Incidencia, SolicitudRepuesto } from '../../../model/incidencia';
+import { EstadoRepuesto, Incidencia, SolicitudRepuesto } from '../../../model/incidencia';
+import { ConfirmDialogService } from '../../../services/confirm-dialog';
 import { IncidenciaService } from '../../../services/incidencia';
 import { SoporteTecnicoService } from '../../../services/soporte-tecnico';
 import { ToastService } from '../../../services/toast';
+import { ClassGeneric } from '../../../util/class-generic';
 import { RegexConstants, onEnterKey } from '../../../util/constant';
+import { setListRow } from '../../../util/methods';
+import { TablePagination } from '../../shared/table-pagination/table-pagination';
+
+type SolicitudRow = SolicitudRepuesto & ClassGeneric;
 
 // HU07 - Solicitar repuesto a Logística y registrar traslado del equipo
 @Component({
   selector: 'app-solicitar-repuesto',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, TablePagination],
   templateUrl: './solicitar-repuesto.html',
   styleUrl: './solicitar-repuesto.scss',
 })
 export class SolicitarRepuestoComponent implements OnInit {
   private incidenciaService = inject(IncidenciaService);
   private soporteService = inject(SoporteTecnicoService);
+  private confirmDialog = inject(ConfirmDialogService);
   private toast = inject(ToastService);
   public RG = RegexConstants;
 
   incidenciasPendientes = signal<Incidencia[]>([]);
-  solicitudes = signal<SolicitudRepuesto[]>([]);
+  solicitudes = signal<SolicitudRow[]>([]);
   selectedRowId: number | null = null;
-  textoFiltro = '';
+  textoFiltro = signal('');
+  estadoFiltro = signal<'TODOS' | EstadoRepuesto>('TODOS');
+  showExtendedCols = signal(false);
+  page = signal(1);
+  pageSize = signal(10);
 
   solicitudesFiltradas = computed(() => {
-    const q = this.textoFiltro.trim().toLowerCase();
+    const q = this.textoFiltro().trim().toLowerCase();
+    const est = this.estadoFiltro();
     const lista = this.solicitudes();
-    if (!q) return lista;
-    return lista.filter(
-      (s) =>
+    return lista.filter((s) => {
+      if (est !== 'TODOS' && s.estado !== est) return false;
+      if (!q) return true;
+      return (
         s.codigoSolicitud.toLowerCase().includes(q) ||
         s.codigoIncidencia.toLowerCase().includes(q) ||
         s.codigoEquipo.toLowerCase().includes(q) ||
         s.codigoRepuesto.toLowerCase().includes(q) ||
-        s.nombreRepuesto.toLowerCase().includes(q),
-    );
+        s.nombreRepuesto.toLowerCase().includes(q)
+      );
+    });
+  });
+
+  solicitudesPaginadas = computed(() => {
+    const lista = this.solicitudesFiltradas();
+    const totalPages = Math.max(1, Math.ceil(lista.length / this.pageSize()));
+    const current = Math.min(Math.max(1, this.page()), totalPages);
+    const start = (current - 1) * this.pageSize();
+    return lista.slice(start, start + this.pageSize());
   });
 
   form = {
@@ -61,7 +83,7 @@ export class SolicitarRepuestoComponent implements OnInit {
     });
 
     this.soporteService.listarRepuestos().subscribe({
-      next: (lista) => this.solicitudes.set(lista),
+      next: (lista) => this.solicitudes.set(setListRow(lista)),
       error: (err: HttpErrorResponse) => {
         this.solicitudes.set([]);
         this.toast.show(err.error?.message ?? 'No se pudieron cargar las solicitudes.', 'danger');
@@ -71,6 +93,10 @@ export class SolicitarRepuestoComponent implements OnInit {
 
   onEnterKey(event: Event): void {
     onEnterKey(event);
+  }
+
+  toggleExtendedCols(): void {
+    this.showExtendedCols.update((v) => !v);
   }
 
   onCheckboxChange(idSolicitud: number, checked: boolean): void {
@@ -111,6 +137,7 @@ export class SolicitarRepuestoComponent implements OnInit {
             justificacion: '',
             trasladarEquipo: true,
           };
+          this.page.set(1);
           this.cargarDatos();
         },
         error: (err: HttpErrorResponse) => {
@@ -121,7 +148,22 @@ export class SolicitarRepuestoComponent implements OnInit {
       });
   }
 
-  avanzarEstado(solicitud: SolicitudRepuesto, nuevoEstado: 'RECIBIDO' | 'RECHAZADO'): void {
+  async avanzarEstado(
+    solicitud: SolicitudRepuesto,
+    nuevoEstado: 'RECIBIDO' | 'RECHAZADO',
+  ): Promise<void> {
+    const confirmado = await this.confirmDialog.confirm({
+      title: 'Actualizar estado de repuesto',
+      message: `¿Confirmas marcar la solicitud ${solicitud.codigoSolicitud} como ${nuevoEstado}?`,
+      confirmText: `Sí, marcar ${nuevoEstado.toLowerCase()}`,
+      cancelText: 'No',
+      variant: nuevoEstado === 'RECHAZADO' ? 'danger' : 'info',
+    });
+
+    if (!confirmado) {
+      return;
+    }
+
     this.soporteService.cambiarEstadoRepuesto(solicitud.idSolicitud, nuevoEstado).subscribe({
       next: () => {
         this.toast.show(
@@ -140,6 +182,8 @@ export class SolicitarRepuestoComponent implements OnInit {
   }
 
   limpiarFiltro(): void {
-    this.textoFiltro = '';
+    this.textoFiltro.set('');
+    this.estadoFiltro.set('TODOS');
+    this.page.set(1);
   }
 }

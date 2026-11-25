@@ -43,6 +43,11 @@ export class RegexConstants {
     const input = event.target as HTMLInputElement;
     input.value = input.value.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
   }
+
+  static rolCodigo(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.toUpperCase().replace(/[^A-Z_]/g, '');
+  }
 }
 
 export const PATTERNS = {
