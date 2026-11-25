@@ -13,3 +13,11 @@ export interface EquipoComplicado {
   trasladado: boolean;
   esperaRepuesto: boolean;
 }
+
+
+// HU11: equipos que solucionó un técnico en un día (SolucionadasPorDiaResponse.java)
+export interface SolucionadasPorDia {
+  fecha: string;      // yyyy-MM-dd
+  tecnico: string;
+  cantidad: number;
+}

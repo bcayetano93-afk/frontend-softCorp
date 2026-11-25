@@ -13,3 +13,11 @@
 .badge + .badge {
   margin-left: 4px;
 }
+
+
+/* Etiquetas "Desde" / "Hasta" del rango de fechas (HU11) */
+.rango-label {
+  align-self: center;
+  color: var(--muted);
+  font-size: 14px;
+}

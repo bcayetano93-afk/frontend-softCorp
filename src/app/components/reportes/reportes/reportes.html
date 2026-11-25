@@ -66,4 +66,45 @@
       </tbody>
     </table>
   </div>
+
+<!-- HU11: equipos solucionados por día y técnico -->
+<section class="card">
+  <h2 class="card-title">Equipos solucionados por día ({{ totalSolucionadas() }} en total)</h2>
+  <p class="nota">Cantidad de equipos que cada técnico solucionó por día, en el rango de fechas elegido.</p>
+
+  <!-- Rango de fechas: input type="date" entrega el valor como yyyy-MM-dd -->
+  <div class="filter-bar">
+    <label class="rango-label" for="desde">Desde</label>
+    <input id="desde" type="date" [(ngModel)]="rango.desde" />
+    <label class="rango-label" for="hasta">Hasta</label>
+    <input id="hasta" type="date" [(ngModel)]="rango.hasta" />
+    <button class="btn-secondary" type="button" (click)="cargarSolucionadas()">Buscar</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Técnico</th>
+          <th>Equipos solucionados</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of solucionadas(); track s.fecha + s.tecnico) {
+          <tr>
+            <!-- 'UTC' evita que la fecha se muestre un día antes por la zona horaria -->
+            <td>{{ s.fecha | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+            <td>{{ s.tecnico }}</td>
+            <td><strong>{{ s.cantidad }}</strong></td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="empty">No hay equipos solucionados en ese rango.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
 </section>

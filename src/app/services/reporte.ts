@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-import { EquipoComplicado } from '../model/reporte';
+import { EquipoComplicado, SolucionadasPorDia } from '../model/reporte';
 
 // Reportes del jefe del área (sprint 4)
 @Injectable({ providedIn: 'root' })
@@ -17,5 +17,12 @@ export class ReporteService {
     if (situacion !== 'TODOS') params = params.set('situacion', situacion);
     if (idTecnico) params = params.set('idTecnico', idTecnico);
     return this.http.get<EquipoComplicado[]>(`${this.url}/equipos-complicados`, { params });
+  }
+
+
+  // HU11: GET /reportes/solucionadas-por-dia?desde=yyyy-MM-dd&hasta=yyyy-MM-dd
+  solucionadasPorDia(desde: string, hasta: string): Observable<SolucionadasPorDia[]> {
+    const params = new HttpParams().set('desde', desde).set('hasta', hasta);
+    return this.http.get<SolucionadasPorDia[]>(`${this.url}/solucionadas-por-dia`, { params });
   }
 }
