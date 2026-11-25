@@ -1,0 +1,47 @@
+/* Tarjetas de indicadores en fila */
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.indicador {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  span {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  strong {
+    color: var(--navy);
+    font-size: 28px;
+  }
+
+  .pendiente {
+    color: var(--orange);
+  }
+
+  .solucionada {
+    color: var(--teal);
+  }
+}
+
+/* Aviso de reemplazo sugerido */
+.alerta {
+  margin-bottom: 16px;
+  border-left: 4px solid #dc2626;
+  color: #991b1b;
+}
+
+.sin-dato {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.filter-bar .btn-form {
+  margin-top: 0;
+}

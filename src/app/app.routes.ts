@@ -14,6 +14,7 @@ import { Proximamente } from './components/principal/proximamente/proximamente';
 import { authGuard } from './guards/auth-guard';
 import { moduloGuard } from './guards/modulo-guard';
 import { Reportes } from './components/reportes/reportes/reportes';
+import { HistorialEquipos } from './components/historial-equipos/historial-equipos/historial-equipos';
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'iniciar-sesion', component: InicioSesion },
@@ -35,6 +36,9 @@ export const routes: Routes = [
       { path: 'gestion-roles', component: RegistrarRol, canActivate: [moduloGuard] },
       // Sprint 4
       { path: 'reportes', component: Reportes, canActivate: [moduloGuard] },
+      { path: 'reportes', component: Reportes, canActivate: [moduloGuard] },
+      { path: 'historial-equipos', component: HistorialEquipos, canActivate: [moduloGuard] },
+      { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] },
       { path: ':modulo', component: Proximamente, canActivate: [moduloGuard] },
     ],
   },

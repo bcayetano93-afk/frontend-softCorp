@@ -1,0 +1,120 @@
+<h1 class="page-title">Historial de equipos</h1>
+<p class="page-subtitle">Consulta las fallas, soluciones y repuestos de un equipo para decidir si conviene reemplazarlo.</p>
+
+<!-- Buscador: filtro RG al escribir + pattern para validar el formato -->
+<section class="card">
+  <form #histFrm="ngForm" class="filter-bar" (ngSubmit)="buscar()" autocomplete="off">
+    <input
+      name="codigoEquipo"
+      required
+      maxlength="30"
+      pattern="^[a-zA-Z0-9]{2,8}(-[a-zA-Z0-9]{1,8}){1,3}$"
+      placeholder="Código del equipo (ej. PC-ADM-014)"
+      [(ngModel)]="codigoEquipo"
+      (input)="RG.codigoEquipo($event)"
+    />
+    <button class="btn-form" type="submit" [disabled]="histFrm.invalid">Buscar</button>
+  </form>
+</section>
+
+@if (historial(); as h) {
+  <!-- Indicadores -->
+  <section class="indicadores">
+    <div class="card indicador">
+      <span>Número de fallas</span>
+      <strong>{{ h.totalFallas }}</strong>
+    </div>
+    <div class="card indicador">
+      <span>Pendientes</span>
+      <strong class="pendiente">{{ h.pendientes }}</strong>
+    </div>
+    <div class="card indicador">
+      <span>Solucionadas</span>
+      <strong class="solucionada">{{ h.solucionadas }}</strong>
+    </div>
+  </section>
+
+  @if (h.reemplazoSugerido) {
+    <div class="card alerta">
+      ⚠️ El equipo <strong>{{ h.codigoEquipo }}</strong> registra {{ h.totalFallas }} fallas.
+      Se sugiere evaluar su reemplazo.
+    </div>
+  }
+
+  <!-- Incidencias del equipo -->
+  <section class="card">
+    <h2 class="card-title">Incidencias de {{ h.codigoEquipo }}</h2>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Fecha</th>
+            <th>Problema</th>
+            <th>Técnico</th>
+            <th>Estado</th>
+            <th>Solución</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of h.incidencias; track i.codigo) {
+            <tr>
+              <td><strong>{{ i.codigo }}</strong></td>
+              <td>{{ i.fechaRegistro | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ i.problema }}</td>
+              <td>{{ i.tecnico ?? '—' }}</td>
+              <td>
+                <span class="badge" [class]="i.estado === 'SOLUCIONADO' ? 'badge badge-solucionado' : 'badge badge-pendiente'">
+                  {{ i.estado }}
+                </span>
+              </td>
+              <td>
+                @if (i.solucionAplicada) {
+                  {{ i.solucionAplicada }}
+                  @if (i.fechaSolucion) {
+                    <br /><small>{{ i.fechaSolucion | date: 'dd/MM/yyyy' }}</small>
+                  }
+                } @else {
+                  <span class="sin-dato">Sin informe técnico</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Repuestos cambiados -->
+  <section class="card">
+    <h2 class="card-title">Repuestos cambiados ({{ h.repuestos.length }})</h2>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Incidencia</th>
+            <th>Código</th>
+            <th>Repuesto</th>
+            <th>Cantidad</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of h.repuestos; track r.codigoRepuesto + r.fechaSolicitud) {
+            <tr>
+              <td>{{ r.codigoIncidencia }}</td>
+              <td>{{ r.codigoRepuesto }}</td>
+              <td>{{ r.nombreRepuesto }}</td>
+              <td>{{ r.cantidad }}</td>
+              <td>{{ (r.fechaRespuesta ?? r.fechaSolicitud) | date: 'dd/MM/yyyy' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty">No se cambiaron repuestos en este equipo.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
