@@ -47,6 +47,7 @@ export class DiccionarioFallas implements OnInit {
 
   form = this.formVacio();
 
+  // Filtro reactivo en memoria por categoría y texto libre sobre los 6 campos del registro
   fallasFiltradas = computed(() => {
     const q = this.palabraBusqueda().trim().toLowerCase();
     const cat = this.categoriaBusqueda();
@@ -101,6 +102,7 @@ export class DiccionarioFallas implements OnInit {
     this.selectedRowId = checked ? idFalla : null;
   }
 
+  // Reutiliza el formulario para crear o actualizar según exista editandoId
   guardar(): void {
     const codigoFalla = this.form.codigoFalla.trim().toUpperCase();
     const titulo = this.form.titulo.trim();
@@ -138,6 +140,7 @@ export class DiccionarioFallas implements OnInit {
     });
   }
 
+  // Carga la fila seleccionada en el formulario para editarla
   editarFalla(falla: FallaDiccionario): void {
     this.editandoId = falla.idFalla;
     this.form = {
@@ -150,6 +153,7 @@ export class DiccionarioFallas implements OnInit {
     };
   }
 
+  // Confirma con el diálogo global antes de borrar el registro del diccionario
   async eliminarFalla(falla: FallaDiccionario): Promise<void> {
     const confirmado = await this.confirmDialog.confirm({
       title: 'Eliminar falla del diccionario',

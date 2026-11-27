@@ -18,6 +18,7 @@ import { HistorialEquipos } from './components/historial-equipos/historial-equip
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'iniciar-sesion', component: InicioSesion },
+  // authGuard protege todo /principal; moduloGuard valida acceso por rol en cada ruta hija
   {
     path: 'principal',
     component: Principal,

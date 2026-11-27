@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { ModuloRequest, ModuloResponse } from '../model/rol';
 
+// Consulta de módulos activos del sistema (patrón SIGCON sobre /api/v1/modulo)
 @Injectable({ providedIn: 'root' })
 export class ModuloService {
   private http = inject(HttpClient);

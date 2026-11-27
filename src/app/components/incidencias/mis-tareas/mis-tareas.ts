@@ -62,6 +62,7 @@ export class MisTareas implements OnInit {
     this.cargar();
   }
 
+  // Combina el listado de incidencias con repuestos SOLICITADO (en Set) para marcar badges en la tabla
   cargar(): void {
     this.incidenciaService.listar().subscribe((lista) => {
       this.todas.set(setListRow(lista));
@@ -84,6 +85,7 @@ export class MisTareas implements OnInit {
     return incidencia.ubicacionEquipo === 'AREA_SOPORTE';
   }
 
+  // Cruza el nombre del técnico asignado con el usuario de la sesión JWT
   esMiIncidencia(incidencia: Incidencia): boolean {
     if (!incidencia.tecnico || !this.user) {
       return false;
@@ -93,6 +95,7 @@ export class MisTareas implements OnInit {
     return partes.every((p) => nombreSesion.includes(p));
   }
 
+  // Filtra por asignación propia, estado y búsqueda de texto, y vuelve a la página 1
   applyFilter(): void {
     const q = this.filtro.texto.trim().toLowerCase();
     const est = this.filtro.estado;

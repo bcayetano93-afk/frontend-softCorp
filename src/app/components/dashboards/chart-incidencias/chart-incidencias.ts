@@ -136,6 +136,7 @@ export class ChartIncidencias implements OnInit {
     };
   });
 
+  // Carga en paralelo los KPIs y las 5 series estadísticas al montar la vista de bienvenida
   ngOnInit(): void {
     const onError = (err: unknown) => {
       console.error('Error al cargar datos del dashboard', err);

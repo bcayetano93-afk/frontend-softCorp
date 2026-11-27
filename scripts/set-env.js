@@ -1,3 +1,4 @@
+// Genera environment.ts antes de ng serve / ng build usando .env local o variables de Vercel
 const { writeFileSync, mkdirSync } = require('fs');
 const { dirname } = require('path');
 require('dotenv').config();

@@ -1,3 +1,4 @@
+// Contratos TypeScript mapeados a los DTOs de /api/v1/dashboard
 export interface DashboardResumen {
   totalIncidencias: number;
   incidenciasPendientes: number;

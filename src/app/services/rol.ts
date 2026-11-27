@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { RolRequest, RolResponse } from '../model/rol';
 
+// CRUD administrativo de roles (patrón SIGCON sobre /api/v1/rol)
 @Injectable({ providedIn: 'root' })
 export class RolService {
   private http = inject(HttpClient);
@@ -17,6 +18,7 @@ export class RolService {
     return this.http.post<RolResponse>(`${this.url}/find`, { idRol });
   }
 
+  // Mismo endpoint crea o actualiza según venga idRol
   save(request: RolRequest): Observable<RolResponse> {
     return this.http.post<RolResponse>(`${this.url}/save`, request);
   }

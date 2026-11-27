@@ -8,6 +8,7 @@ export const HTTP_STATUS = {
   INTERNAL_SERVER_ERROR: 500,
 };
 
+// Filtros estáticos para limpiar caracteres inválidos al escribir desde (input) en templates
 export class RegexConstants {
   static number(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -57,6 +58,7 @@ export const PATTERNS = {
   textoGeneral: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-.,:/()#]{3,300}$/,
 };
 
+// Mueve el foco al siguiente control habilitado al presionar Enter (ignora textarea para permitir saltos de línea)
 export function onEnterKey(event: Event): void {
   const target = event.target as HTMLElement | null;
   if (!target || target.tagName === 'TEXTAREA') {

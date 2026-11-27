@@ -55,6 +55,7 @@ export class InformeTecnicoComponent implements OnInit {
     onEnterKey(event);
   }
 
+  // Trae incidencias pendientes con técnico y el historial de informes emitidos
   cargarDatos(): void {
     this.incidenciaService.listar().subscribe((lista) => {
       this.incidenciasPendientes.set(
@@ -71,6 +72,7 @@ export class InformeTecnicoComponent implements OnInit {
     });
   }
 
+  // Registra diagnóstico y solución; el backend rechaza el cierre si aún hay repuestos SOLICITADO
   registrarInforme(): void {
     const inc = this.incidenciasPendientes().find((i) => i.idIncidencia === this.form.idIncidencia);
     const diagnostico = this.form.diagnostico.trim();

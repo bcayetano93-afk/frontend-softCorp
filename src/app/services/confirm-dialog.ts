@@ -30,10 +30,12 @@ export interface DialogState {
   resolve: (result: boolean) => void;
 }
 
+// Diálogo global basado en signals; devuelve Promises para poder usar await en los componentes
 @Injectable({ providedIn: 'root' })
 export class ConfirmDialogService {
   activeDialog = signal<DialogState | null>(null);
 
+  // Abre modal de confirmación (Sí/No) y resuelve true o false según la respuesta del usuario
   confirm(options: ConfirmOptions): Promise<boolean> {
     this.dismissPending();
     return new Promise<boolean>((resolve) => {
@@ -50,6 +52,7 @@ export class ConfirmDialogService {
     });
   }
 
+  // Diálogo informativo de un solo botón (ej. aviso de sesión expirada en authInterceptor)
   alert(options: AlertOptions): Promise<void> {
     this.dismissPending();
     return new Promise<void>((resolve) => {
@@ -66,6 +69,7 @@ export class ConfirmDialogService {
     });
   }
 
+  // Resuelve la promesa pendiente cuando el usuario confirma o cancela
   accept(): void {
     const current = this.activeDialog();
     if (!current) {
@@ -92,6 +96,7 @@ export class ConfirmDialogService {
     this.cancel();
   }
 
+  // Cierra cualquier diálogo previo pendiente en false para no dejar promesas colgadas
   private dismissPending(): void {
     const current = this.activeDialog();
     if (current) {

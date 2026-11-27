@@ -75,6 +75,7 @@ export class SolicitarRepuestoComponent implements OnInit {
     this.cargarDatos();
   }
 
+  // Carga incidencias pendientes con técnico asignado y la tabla de solicitudes
   cargarDatos(): void {
     this.incidenciaService.listar().subscribe((lista) => {
       this.incidenciasPendientes.set(
@@ -103,6 +104,7 @@ export class SolicitarRepuestoComponent implements OnInit {
     this.selectedRowId = checked ? idSolicitud : null;
   }
 
+  // Envía la solicitud de repuesto para una incidencia pendiente (traslado a AREA_SOPORTE opcional)
   solicitar(): void {
     const inc = this.incidenciasPendientes().find((i) => i.idIncidencia === this.form.idIncidencia);
     const codigoRepuesto = this.form.codigoRepuesto.trim().toUpperCase();
@@ -148,6 +150,7 @@ export class SolicitarRepuestoComponent implements OnInit {
       });
   }
 
+  // Pide confirmación modal antes de pasar la solicitud de SOLICITADO a RECIBIDO o RECHAZADO
   async avanzarEstado(
     solicitud: SolicitudRepuesto,
     nuevoEstado: 'RECIBIDO' | 'RECHAZADO',

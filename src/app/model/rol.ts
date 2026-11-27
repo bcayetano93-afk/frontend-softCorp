@@ -1,5 +1,6 @@
 import { ClassGeneric } from '../util/class-generic';
 
+// Contratos de entrada/salida para gestión de roles y módulos
 export interface RolRequest {
   idRol?: number;
   codigo: string;

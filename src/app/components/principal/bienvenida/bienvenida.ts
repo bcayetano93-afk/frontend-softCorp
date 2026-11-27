@@ -15,6 +15,7 @@ export class Bienvenida {
   user: UserSession | null = inject(SessionService).getInfoSession();
   icono = iconoModulo;
 
+  // Incluye Gestión de roles para el JEFE aunque no venga como fila fija en la tabla modulo
   get modulosVisibles(): Modulo[] {
     if (!this.user) {
       return [];

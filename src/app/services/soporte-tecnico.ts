@@ -17,6 +17,7 @@ export class SoporteTecnicoService {
   private http = inject(HttpClient);
   private url = `${environment.apiUrl}/v1`;
 
+  // HU07: repuestos (listar por filtro, crear solicitud y actualizar estado)
   listarRepuestos(estado?: string, idIncidencia?: number): Observable<SolicitudRepuesto[]> {
     let params = new HttpParams();
     if (estado) {
@@ -39,6 +40,7 @@ export class SoporteTecnicoService {
     return this.http.put<SolicitudRepuesto>(`${this.url}/repuestos/${idSolicitud}/estado`, { estado });
   }
 
+  // HU08: informes técnicos
   listarInformes(): Observable<InformeTecnico[]> {
     return this.http.get<InformeTecnico[]>(`${this.url}/informes-tecnicos`);
   }
@@ -47,6 +49,7 @@ export class SoporteTecnicoService {
     return this.http.post<InformeTecnico>(`${this.url}/informes-tecnicos`, request);
   }
 
+  // HU09: diccionario de fallas (búsqueda y CRUD)
   buscarFallas(keyword?: string, categoria?: string): Observable<FallaDiccionario[]> {
     let params = new HttpParams();
     if (keyword) {

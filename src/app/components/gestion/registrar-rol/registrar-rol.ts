@@ -48,6 +48,7 @@ export class RegistrarRol implements OnInit {
   showModal = signal(false);
   record: RolRequest = { codigo: '', descripcion: '' };
 
+  // Carga módulos y roles en paralelo; solo el rol JEFE habilita alta, edición y eliminación
   ngOnInit(): void {
     forkJoin({
       modulos: this.moduloService.list({}),
@@ -71,6 +72,7 @@ export class RegistrarRol implements OnInit {
     this.selectedRowId.set(checked ? idRol : null);
   }
 
+  // Consulta roles al backend aplicando el filtro de descripción
   search(): void {
     const descripcion = this.filterDescripcion().trim();
     this.rolService.list(descripcion ? { descripcion } : {}).subscribe({
@@ -98,6 +100,7 @@ export class RegistrarRol implements OnInit {
     this.showModal.set(true);
   }
 
+  // Trae el detalle actualizado del rol antes de abrir el modal de edición
   openEdit(row: RolResponse): void {
     if (!this.esJefe) {
       return;
@@ -121,6 +124,7 @@ export class RegistrarRol implements OnInit {
     this.showModal.set(false);
   }
 
+  // Guarda alta o edición en /api/v1/rol/save según venga idRol
   save(): void {
     const codigo = (this.record.codigo ?? '').trim().toUpperCase();
     const descripcion = (this.record.descripcion ?? '').trim();
@@ -149,6 +153,7 @@ export class RegistrarRol implements OnInit {
     });
   }
 
+  // Pide confirmación modal antes de eliminar el rol
   async delete(row: RolResponse): Promise<void> {
     if (!this.esJefe) {
       return;
